@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador PAP · Primeros Auxilios Psicológicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #ECE9E2;
+    --panel: #FBFAF7;
+    --panel-raised: #FFFFFF;
+    --ink: #1E2B2B;
+    --ink-soft: #4B5B5B;
+    --line: #D8D3C8;
+    --teal: #2F6F6B;
+    --teal-deep: #1F4E4B;
+    --brick: #A8453A;
+    --brick-soft: #F1DFDB;
+    --sage: #6F8F6A;
+    --sage-soft: #E3EBDF;
+    --amber: #B08A2E;
+    --amber-soft: #F3E8D2;
+    --muted: #899390;
+    --radius: 3px;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .app{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+
+  .casefile-header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px; margin-bottom:6px;
+  }
+  .casefile-title{
+    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .casefile-title strong{color:var(--ink); font-weight:600;}
+  .tabbar{display:flex; gap:2px;}
+  .tab{
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    padding:7px 14px; cursor:pointer; border:1px solid var(--ink); border-bottom:none;
+    background:var(--bg); color:var(--ink-soft);
+  }
+  .tab.active{background:var(--ink); color:var(--panel);}
+
+  .phase-track{
+    display:flex; align-items:center; gap:0; margin:22px 0 26px;
+    font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+  }
+  .phase-step{display:flex; align-items:center; gap:8px; color:var(--muted); flex:1;}
+  .phase-dot{width:9px; height:9px; border-radius:50%; border:1.5px solid var(--muted); flex-shrink:0;}
+  .phase-step.done .phase-dot{background:var(--teal); border-color:var(--teal);}
+  .phase-step.current{color:var(--ink);}
+  .phase-step.current .phase-dot{background:var(--brick); border-color:var(--brick);}
+  .phase-line{flex:1; height:1px; background:var(--line); margin:0 6px;}
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 28px; margin-bottom:18px;
+  }
+  .scene-label{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--teal-deep); margin-bottom:10px; display:block;
+  }
+  .narrative{
+    font-family:var(--serif); font-size:17px; color:var(--ink); line-height:1.65;
+    margin-bottom:0;
+  }
+  .character-line{
+    font-family:var(--serif); font-style:italic; font-size:18px; color:var(--teal-deep);
+    background:var(--sage-soft); border-left:3px solid var(--sage);
+    padding:14px 18px; margin-top:16px; border-radius:0 var(--radius) var(--radius) 0;
+  }
+  .prompt-q{
+    font-family:var(--sans); font-weight:600; font-size:14.5px; color:var(--ink);
+    margin:20px 0 12px;
+  }
+
+  .options{display:flex; flex-direction:column; gap:9px;}
+  .option-btn{
+    text-align:left; background:var(--panel-raised); border:1px solid var(--line);
+    border-radius:var(--radius); padding:13px 16px 13px 44px; position:relative;
+    font-family:var(--sans); font-size:14.5px; color:var(--ink); cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .option-btn:hover{border-color:var(--teal); background:#F5F8F7;}
+  .option-btn:focus-visible{outline:2px solid var(--teal); outline-offset:1px;}
+  .option-letter{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--mono); font-size:11.5px; color:var(--muted); font-weight:500;
+  }
+
+  textarea.freeform{
+    width:100%; min-height:110px; font-family:var(--sans); font-size:14.5px;
+    border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px;
+    resize:vertical; background:var(--panel-raised); color:var(--ink);
+  }
+  textarea.freeform:focus-visible{outline:2px solid var(--teal); outline-offset:1px;}
+  .submit-row{display:flex; justify-content:flex-end; margin-top:10px;}
+  .btn-primary{
+    font-family:var(--sans); font-weight:600; font-size:13.5px; letter-spacing:.02em;
+    background:var(--teal-deep); color:#fff; border:none; border-radius:var(--radius);
+    padding:11px 20px; cursor:pointer;
+  }
+  .btn-primary:hover{background:var(--teal);}
+  .btn-primary:disabled{background:var(--muted); cursor:not-allowed;}
+  .btn-secondary{
+    font-family:var(--sans); font-weight:600; font-size:13.5px;
+    background:transparent; color:var(--teal-deep); border:1px solid var(--teal-deep);
+    border-radius:var(--radius); padding:10px 18px; cursor:pointer;
+  }
+
+  .loading-line{
+    font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:10px;
+  }
+
+  .intro-block{max-width:640px;}
+  .intro-block h1{font-family:var(--serif); font-size:30px; font-weight:600; margin:8px 0 4px;}
+  .intro-block .sub{color:var(--ink-soft); font-size:14.5px; margin-bottom:22px;}
+  .field-label{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); display:block; margin-bottom:6px;}
+  input.name-input{
+    width:100%; font-family:var(--sans); font-size:15px; padding:11px 14px;
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel-raised); margin-bottom:18px;
+  }
+  input.name-input:focus-visible{outline:2px solid var(--teal); outline-offset:1px;}
+  .disclaimer{
+    font-family:var(--sans); font-size:12.5px; color:var(--ink-soft); background:var(--amber-soft);
+    border-left:3px solid var(--amber); padding:12px 16px; margin-top:20px; border-radius:0 var(--radius) var(--radius) 0;
+  }
+
+  .case-picker{display:flex; flex-direction:column; gap:9px; margin-bottom:18px;}
+  .case-option{
+    display:flex; align-items:flex-start; gap:10px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel-raised); cursor:pointer;
+  }
+  .case-option.selected{border-color:var(--teal); background:#F5F8F7;}
+  .case-option input{margin-top:3px;}
+  .case-option .case-title{font-weight:600; font-size:14px;}
+  .case-option .case-desc{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+
+  .score-hero{display:flex; align-items:center; gap:26px; margin-bottom:24px;}
+  .score-circle{
+    width:118px; height:118px; border-radius:50%; border:6px solid var(--teal);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; flex-shrink:0;
+    font-family:var(--mono);
+  }
+  .score-circle .num{font-size:30px; font-weight:600; color:var(--ink);}
+  .score-circle .den{font-size:10px; color:var(--muted);}
+  .level-tag{
+    display:inline-block; font-family:var(--mono); font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em; padding:4px 10px; border-radius:2px; margin-bottom:6px;
+  }
+  .level-excelente{background:var(--sage-soft); color:#3E5C3A;}
+  .level-adecuado{background:#DCEAE8; color:var(--teal-deep);}
+  .level-desarrollo{background:var(--amber-soft); color:#7A5C1E;}
+  .level-fortalecimiento{background:var(--brick-soft); color:#7A2E25;}
+
+  .bar-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .bar-label{font-family:var(--sans); font-size:13px; width:230px; flex-shrink:0; color:var(--ink-soft);}
+  .bar-track{flex:1; height:8px; background:var(--line); border-radius:4px; overflow:hidden;}
+  .bar-fill{height:100%; background:var(--teal); border-radius:4px;}
+  .bar-val{font-family:var(--mono); font-size:12px; width:52px; text-align:right; color:var(--ink-soft);}
+
+  .report-section h3{
+    font-family:var(--sans); font-size:13px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--ink-soft); margin:26px 0 10px; border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .report-section ul{margin:0; padding-left:20px;}
+  .report-section li{font-size:14px; margin-bottom:6px;}
+  .tag-strength{color:#3E5C3A;}
+  .tag-error{color:#7A2E25;}
+  .tag-risk{color:#7A2E25; font-weight:600;}
+
+  .session-row{
+    background:var(--panel-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:10px; cursor:pointer;
+  }
+  .session-row-head{display:flex; justify-content:space-between; align-items:center; font-family:var(--sans); font-size:14px; flex-wrap:wrap; gap:6px;}
+  .session-row-head .name{font-weight:600;}
+  .session-row-head .meta{font-family:var(--mono); font-size:11.5px; color:var(--muted);}
+  .session-detail{margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:none;}
+  .session-detail.open{display:block;}
+  .log-entry{font-size:13px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--line);}
+  .log-entry .scene-tag{font-family:var(--mono); font-size:10.5px; color:var(--teal-deep); text-transform:uppercase;}
+  .empty-note{font-family:var(--mono); font-size:12.5px; color:var(--muted); padding:20px 0;}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+(function(){
+
+/* ============================================================
+   BANCO DE CASOS
+   Cada caso define su propio contexto (evento, protagonista) y
+   se combina con una plantilla común de escenas basada en el
+   modelo Mirar–Escuchar–Conectar (PAP / OMS). Esto permite que
+   el simulador presente un caso distinto en cada inicio o
+   reinicio, evitando que el estudiante memorice un único guion.
+   ============================================================ */
+
+const CASES = [
+  {
+    id: "accidente_transito",
+    tag: "Caso A",
+    tituloCorto: "Testigo de un accidente de tránsito",
+    descripcion: "Una joven que presenció un accidente vehicular grave a pocos metros de ella.",
+    nombre: "Camila", edad: 21,
+    persona: "la joven", personaCap: "La joven", pron: "ella",
+    acompanado: "acompañada", herido: "herida",
+    llegada: "Llegas al lugar pocos minutos después del accidente. Hay dos vehículos involucrados, personal de emergencia comenzando a llegar, algunas personas heridas siendo atendidas, y varias personas alrededor, algunas llorando. El ambiente es caótico y ruidoso. A unos metros, apartada del grupo principal, ves a una joven de aproximadamente 21 años, sentada en el borde de la acera, temblando visiblemente y llorando.",
+    aperturaLine: "\"No sé qué hacer... no puedo dejar de pensar en lo que vi.\"",
+    estadoInicial: "llorando de forma intermitente, con dificultad para organizar sus ideas",
+    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que tiene frío, que no sabe dónde quedó su teléfono, y que una amiga que iba con ella en el auto fue trasladada al hospital hace unos minutos. Nadie le ha revisado si ella misma tiene alguna lesión.",
+    senalRiesgoLine: "\"Desde que llegué aquí solo pienso que ya no vale la pena esforzarme en nada... como si esto fuera una señal de que ya no puedo más.\"",
+    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que presenció el accidente, especialmente al pensar en su amiga herida. Se ve agotada y abrumada.",
+    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+  },
+  {
+    id: "sismo",
+    tag: "Caso B",
+    tituloCorto: "Sobreviviente de un sismo",
+    descripcion: "Un joven recién rescatado tras quedar atrapado brevemente durante un sismo, separado de su hermano menor.",
+    nombre: "Andrés", edad: 24,
+    persona: "el joven", personaCap: "El joven", pron: "él",
+    acompanado: "acompañado", herido: "herido",
+    llegada: "Llegas a la zona minutos después de un sismo de fuerte intensidad. Personal de rescate trabaja entre los escombros de un edificio parcialmente colapsado, vecinos ayudan a evacuar a otras personas, y se escuchan sirenas a lo lejos. A un costado, envuelto en una manta térmica, ves a un joven de aproximadamente 24 años, sentado en el suelo, con las manos temblorosas y la mirada fija en el edificio dañado.",
+    aperturaLine: "\"No sé qué hacer... todavía siento que el piso se sigue moviendo.\"",
+    estadoInicial: "con la mirada fija en el edificio, respirando de forma agitada y con dificultad para hilar sus ideas",
+    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que quedó atrapado unos minutos bajo un marco de puerta antes de ser rescatado, que tiene un corte profundo en el brazo que nadie ha revisado, y que su hermano menor, con quien caminaba antes del sismo, se separó de él durante la evacuación y no sabe dónde está.",
+    senalRiesgoLine: "\"Desde que pasó esto solo pienso que ya no vale la pena esforzarme en nada... como si esto fuera una señal de que ya no puedo más.\"",
+    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde el sismo, especialmente al no saber si su hermano está bien. Se ve agotado y abrumado.",
+    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+  },
+  {
+    id: "perdida_subita",
+    tag: "Caso C",
+    tituloCorto: "Notificación de una muerte súbita",
+    descripcion: "Una joven que acaba de recibir, en la sala de espera de un hospital, la noticia del fallecimiento repentino de su padre.",
+    nombre: "Valentina", edad: 22,
+    persona: "la joven", personaCap: "La joven", pron: "ella",
+    acompanado: "acompañada", herido: "herida",
+    llegada: "Llegas a la sala de espera de urgencias de un hospital. Hace unos minutos, el personal médico informó a una familia que uno de sus integrantes falleció de forma repentina por un paro cardíaco. Hay llanto y confusión en el lugar. A un costado, apartada del resto de su familia, ves a una joven de aproximadamente 22 años, de pie junto a una pared, con la mirada perdida y una respiración muy agitada.",
+    aperturaLine: "\"No puedo creerlo... no entiendo cómo pasó esto tan rápido.\"",
+    estadoInicial: "con la mirada perdida, la respiración entrecortada y dificultad para mantenerse de pie con estabilidad",
+    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que llegó sola al hospital porque el resto de su familia vive en otra ciudad, que no ha comido nada desde la mañana, y que no sabe a quién avisar primero ni qué trámites debe realizar. Nadie le ha ofrecido agua ni un lugar donde sentarse con calma.",
+    senalRiesgoLine: "\"Desde que me dijeron esto solo pienso que ya no vale la pena seguir esforzándome en nada... como si ya no tuviera sentido seguir.\"",
+    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que recibió la noticia, especialmente al pensar en enfrentar sola los días siguientes. Se ve agotada y abrumada.",
+    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+  }
+];
+
+const MAX_SCORES = {
+  seguridad: 20, comunicacion: 20, necesidades: 20,
+  intervencion: 15, recursos: 10, derivacion: 10, etica: 5
+};
+const CATEGORY_LABELS = {
+  seguridad: "Seguridad y evaluación inicial",
+  comunicacion: "Comunicación y empatía",
+  necesidades: "Identificación de necesidades",
+  intervencion: "Intervención y estabilización",
+  recursos: "Activación de recursos y red de apoyo",
+  derivacion: "Derivación y límites profesionales",
+  etica: "Ética profesional"
+};
+
+function fill(text, c){
+  return text
+    .replace(/\{\{NOMBRE\}\}/g, c.nombre)
+    .replace(/\{\{PERSONA_CAP\}\}/g, c.personaCap)
+    .replace(/\{\{PERSONA\}\}/g, c.persona)
+    .replace(/\{\{PRON\}\}/g, c.pron)
+    .replace(/\{\{ACOMPANADO\}\}/g, c.acompanado)
+    .replace(/\{\{HERIDO\}\}/g, c.herido)
+    .replace(/\{\{EDAD\}\}/g, c.edad);
+}
+
+/* Construye el árbol completo de escenas para un caso dado,
+   combinando el texto específico del caso con la plantilla
+   común de opciones y mecánica de decisión. */
+function buildScenes(c){
+  return {
+    llegada: {
+      phase: "mirar",
+      label: "Escena 1 · Llegada al lugar",
+      narrative: c.llegada,
+      type: "choice",
+      category: "seguridad",
+      options: [
+        { text: fill("Acercarte de inmediato a {{PERSONA}} y preguntarle qué pasó.", c), pts: 3,
+          error: "No se realizó una evaluación de la escena antes de intervenir." },
+        { text: "Detenerte brevemente a observar la escena: identificar riesgos físicos, personal de emergencia presente y posibles peligros antes de acercarte.", pts: 8 },
+        { text: "Comenzar a tomar notas clínicas sobre lo que observas antes de acercarte a nadie.", pts: 1,
+          error: "El foco inicial se desplazó hacia el registro en vez de la seguridad y la persona." },
+        { text: fill("Buscar primero a un familiar o conocido de {{PERSONA}} antes de acercarte a {{PRON}}.", c), pts: 4 }
+      ],
+      next: "acercamiento"
+    },
+
+    acercamiento: {
+      phase: "mirar",
+      label: "Escena 2 · Primer acercamiento",
+      narrative: fill("Decides acercarte a {{PERSONA}}. Está {{PRON}} sola, con la mirada perdida, respirando de forma agitada. Nadie más se ha acercado a hablar con {{PRON}} todavía.", c),
+      type: "choice",
+      category: "comunicacion",
+      options: [
+        { text: "Acercarte lentamente, mantener una distancia prudente y presentarte: \"Hola, soy [tu nombre], soy estudiante de psicología y estoy aquí para acompañarte, ¿está bien si converso contigo un momento?\"", pts: 6 },
+        { text: "Acercarte, ponerle la mano en el hombro y decirle: \"Tranquila, ya pasó, cálmate.\"", pts: -2,
+          error: "Se utilizó la frase \"cálmate\", que invalida la reacción emocional de la persona." },
+        { text: "Preguntar directamente: \"¿Puedes contarme exactamente qué pasó?\"", pts: 0,
+          error: "Se presionó a la persona para relatar el evento traumático de forma prematura." },
+        { text: "Quedarte cerca en silencio, esperando que hable primero, sin presentarte.", pts: 2,
+          error: "No hubo presentación ni identificación profesional." }
+      ],
+      next: "apertura_empatica"
+    },
+
+    apertura_empatica: {
+      phase: "escuchar",
+      label: "Escena 3 · Apertura del contacto",
+      narrative: fill("{{PERSONA_CAP}} te mira y dice, con la voz entrecortada:", c),
+      characterLine: c.aperturaLine,
+      type: "free",
+      category: "comunicacion",
+      maxPts: 8,
+      prompt: "¿Qué le dirías en este momento?",
+      evalContext: "El estudiante debe abrir el contacto de forma empática tras la primera revelación emocional de la persona en crisis, sin presionarla a relatar el evento, validando su malestar y dejando espacio para que decida cuánto compartir.",
+      next: "escucha_inicial"
+    },
+
+    escucha_inicial: {
+      phase: "escuchar",
+      label: "Escena 4 · Escucha activa",
+      narrative: fill("{{PERSONA_CAP}} sigue " + c.estadoInicial + ".", c),
+      type: "choice",
+      category: "comunicacion",
+      options: [
+        { text: "\"Es comprensible sentirte así después de algo tan impactante. Estoy aquí contigo.\"", pts: 6 },
+        { text: "\"No pasa nada, todos vamos a estar bien, ya vas a ver.\"", pts: -1,
+          error: "Se dio una falsa garantía sobre un resultado que no se puede prometer." },
+        { text: "\"¿Puedes describirme exactamente la secuencia de lo que ocurrió, paso a paso?\"", pts: 0,
+          error: "Se insistió en obtener el relato detallado del evento traumático." },
+        { text: "Preguntarle su nombre y cómo se siente en este momento, sin pedirle detalles de lo ocurrido.", pts: 5 }
+      ],
+      next: "necesidad_info"
+    },
+
+    necesidad_info: {
+      phase: "escuchar",
+      label: "Escena 5 · Identificación de necesidades",
+      narrative: fill("Se ha logrado un contacto inicial. {{PERSONA_CAP}} —dice llamarse {{NOMBRE}}— sigue visiblemente afectado{{HERIDO_SUFIJO}}, pero ya puede sostener una conversación breve contigo.", c).replace("{{HERIDO_SUFIJO}}", ""),
+      type: "free",
+      category: "necesidades",
+      maxPts: 10,
+      prompt: "¿Qué información necesitas conocer en este momento para orientar tu intervención?",
+      evalContext: "El estudiante debe identificar qué necesita explorar en esta etapa de los PAP: estado emocional actual, seguridad física/necesidad de atención médica, red de apoyo disponible, personas significativas presentes o ausentes, y posibles factores de riesgo — sin necesidad de indagar en el relato del evento traumático en sí.",
+      next: "necesidades_inmediatas"
+    },
+
+    necesidades_inmediatas: {
+      phase: "escuchar",
+      label: "Escena 6 · Necesidades inmediatas",
+      narrative: fill(c.necesidadesNarrative, c),
+      type: "choice",
+      category: "necesidades",
+      options: [
+        { text: fill("Preguntarle si está {{HERIDO}} o si ha sido revisado por personal médico, y gestionar que lo revisen si no lo ha sido.", c), pts: 5 },
+        { text: "Preguntarle si hay algún familiar o persona de confianza a quien pueda llamar en este momento.", pts: 5 },
+        { text: "Comenzar a aplicar un ejercicio prolongado de respiración diafragmática con conteo, como en un protocolo clínico estructurado.", pts: -1,
+          error: "Se utilizó una técnica estructurada de intervención psicoterapéutica que excede el alcance de los PAP." },
+        { text: "Decirle que todo pasa por una razón y que esta experiencia lo hará más fuerte.", pts: -1,
+          error: "Se ofreció un consejo personal/filosófico en lugar de una respuesta centrada en sus necesidades." }
+      ],
+      next: "senal_riesgo"
+    },
+
+    senal_riesgo: {
+      phase: "conectar",
+      label: "Escena 7 · Una señal de alerta",
+      narrative: fill("Mientras hablan, {{NOMBRE}} baja la mirada y su tono cambia.", c),
+      characterLine: c.senalRiesgoLine,
+      type: "choice",
+      category: "seguridad",
+      options: [
+        { text: "Preguntarle de forma directa y calmada si en este momento ha tenido pensamientos de hacerse daño o de que no vale la pena seguir viviendo.", pts: 8, next: "riesgo_explorado" },
+        { text: "Cambiar de tema para no incomodarlo más de lo que ya está.", pts: 0,
+          error: "Se pasó por alto una posible señal de riesgo sin explorarla.", next: "riesgo_omitido" },
+        { text: "Decirle: \"No digas eso, seguro no lo piensas en serio.\"", pts: -1,
+          error: "Se minimizó una posible señal de riesgo en lugar de explorarla.", next: "riesgo_omitido" },
+        { text: "Decirle: \"Puedes contarme todo, te prometo que absolutamente nada de esto va a salir de aquí.\"", pts: 3,
+          error: "Se prometió confidencialidad absoluta sin considerar que, si hay riesgo para su vida, esa confidencialidad tiene límites.", next: "riesgo_explorado" }
+      ]
+    },
+
+    riesgo_explorado: {
+      phase: "conectar",
+      label: "Escena 8 · Explorando el riesgo",
+      narrative: fill(c.riesgoExploradoNarrative, c),
+      type: "free",
+      category: "seguridad",
+      maxPts: 4,
+      prompt: "A partir de esta información, ¿qué harías?",
+      evalContext: "El estudiante debe tomar en serio la ideación pasiva revelada, sin generar alarmismo ni promesas de confidencialidad absoluta, priorizando no dejar sola a la persona, mantener contacto cercano y activar una derivación a apoyo profesional/red de contención, dentro de los límites de los PAP (no debe intentar hacer una intervención clínica de riesgo suicida por sí mismo).",
+      next: "conectar_recursos",
+      riskHandled: true
+    },
+
+    riesgo_omitido: {
+      phase: "conectar",
+      label: "Escena 8 · Continuando el contacto",
+      narrative: fill(c.riesgoOmitidoNarrative, c),
+      type: "info",
+      riskMissed: true,
+      next: "conectar_recursos"
+    },
+
+    conectar_recursos: {
+      phase: "conectar",
+      label: "Escena 9 · Activación de recursos",
+      narrative: fill("Ha pasado un rato. Es momento de pensar en los siguientes pasos para {{NOMBRE}}: contacto con su red de apoyo y coordinación con los recursos disponibles en el lugar.", c),
+      type: "choice",
+      category: "recursos",
+      options: [
+        { text: fill("Ayudar a {{NOMBRE}} a contactar a un familiar o persona de confianza, y coordinar con el personal presente para que sea evaluado médicamente.", c), pts: 10 },
+        { text: "Decirle que tú te vas a encargar personalmente de resolver todo lo que necesite.", pts: 2,
+          error: "Se asumió un compromiso de resolver todo, fomentando dependencia en lugar de activar su propia red de apoyo." },
+        { text: "Alejarte un momento para buscar ayuda sin decirle nada ni asegurarte de que quede acompañado.", pts: 0,
+          error: "Se dejó sola, sin acompañamiento, a una persona en una situación de vulnerabilidad." },
+        { text: "Sugerirle que hable de lo ocurrido con todas las personas presentes en el lugar para \"desahogarse\" en grupo.", pts: 1,
+          error: "Se propuso una forma de intervención grupal no estructurada que no corresponde a los PAP y puede ser retraumatizante." }
+      ],
+      next: "derivacion"
+    },
+
+    derivacion: {
+      phase: "conectar",
+      label: "Escena 10 · Derivación",
+      narrative: "Antes de finalizar el contacto, es momento de decidir sobre la derivación.",
+      type: "free",
+      category: "derivacion",
+      maxPts: 10,
+      prompt: "¿Consideras necesario realizar alguna derivación? ¿Por qué?",
+      evalContext: fill("El estudiante debe reconocer los límites de los PAP y fundamentar si corresponde derivar a {{NOMBRE}} a apoyo psicológico profesional y/o servicios de salud, considerando lo revelado (exposición a un evento de crisis, ideación pasiva reciente, necesidad de seguimiento), sin realizar diagnóstico ni psicoterapia en el lugar.", c),
+      next: "cierre"
+    },
+
+    cierre: {
+      phase: "conectar",
+      label: "Escena 11 · Cierre del contacto",
+      narrative: fill("Es momento de finalizar tu intervención con {{NOMBRE}}.", c),
+      type: "choice",
+      category: "intervencion",
+      options: [
+        { text: fill("Explicarle con claridad qué puede pasar a continuación, entregarle información de contacto de servicios de apoyo psicológico, y asegurarte de que quede {{ACOMPANADO}} por alguien de confianza antes de retirarte.", c), pts: 15 },
+        { text: "Despedirte diciéndole rápidamente que todo va a estar bien.", pts: 4,
+          error: "El cierre incluyó una falsa garantía y no aseguró acompañamiento posterior." },
+        { text: "Quedarte con él/ella de forma indefinida, evitando derivarlo a nadie más y tratando de resolver tú mismo/a toda la situación.", pts: 3,
+          error: "No se reconocieron los límites propios de los PAP frente a una necesidad de apoyo continuado." },
+        { text: "Entregarle solo un número de teléfono de contacto, sin explicar nada más ni verificar que tenga compañía.", pts: 6 }
+      ],
+      next: "END"
+    }
+  };
+}
+
+/* Penalizaciones de ética asociadas a opciones específicas
+   (se aplican por índice de opción dentro de cada escena). */
+const ETHICS_PENALTIES = {
+  necesidades_inmediatas: { 2: 1, 3: 0.5 },
+  senal_riesgo: { 3: 2 },
+  conectar_recursos: { 1: 1, 2: 1, 3: 1.5 },
+  cierre: { 2: 1 }
+};
+
+/* ============================================================
+   ESTADO GLOBAL
+   ============================================================ */
+
+let SCENES = null;
+let currentCase = null;
+let state = null;
+
+function freshState(){
+  return {
+    studentName: "",
+    startTime: null,
+    endTime: null,
+    sceneId: "llegada",
+    scores: { seguridad:0, comunicacion:0, necesidades:0, intervencion:0, recursos:0, derivacion:0, etica:5 },
+    log: [],
+    errors: [],
+    riskHandled: null,
+    view: "intro",
+    caseChoice: "aleatorio"
+  };
+}
+
+const teacherState = { openSession: null, sessions: [] };
+let activeTab = "sim";
+
+/* ============================================================
+   CLAVE DE ACCESO — MODO DOCENTE
+   Cambia el valor de TEACHER_PASSWORD por la clave que quieras usar.
+   Nota: esto es una protección simple del lado del cliente (evita que
+   cualquier alumno entre "sin querer"), no es seguridad real: cualquiera
+   con conocimientos técnicos podría ver la clave en el código fuente.
+   ============================================================ */
+const TEACHER_PASSWORD = "pap2026";
+let teacherUnlocked = false;
+
+function requestTeacherAccess(onSuccess){
+  if(teacherUnlocked){ onSuccess(); return; }
+  const pass = window.prompt("Ingresa la clave del modo docente:");
+  if(pass === null) return; // canceló
+  if(pass === TEACHER_PASSWORD){
+    teacherUnlocked = true;
+    onSuccess();
+  } else {
+    window.alert("Clave incorrecta.");
+  }
+}
+
+function pickCase(choiceId){
+  if(choiceId === "aleatorio"){
+    return CASES[Math.floor(Math.random() * CASES.length)];
+  }
+  return CASES.find(c => c.id === choiceId) || CASES[0];
+}
+
+/* ============================================================
+   MOTOR DE EVALUACIÓN DE RESPUESTAS ABIERTAS (API Claude)
+   ============================================================ */
+
+async function evaluateFreeResponse(sceneId, sceneDef, studentText){
+  // El prompt del sistema y la llamada a la API de Anthropic ahora viven en
+  // netlify/functions/evaluate.js, del lado del servidor, para no exponer
+  // la clave de API en el navegador del estudiante.
+  try{
+    const response = await fetch("/.netlify/functions/evaluate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentText,
+        maxPts: sceneDef.maxPts,
+        evalContext: sceneDef.evalContext
+      })
+    });
+    if(!response.ok) throw new Error(`Función de evaluación respondió ${response.status}`);
+    const parsed = await response.json();
+    if(parsed.error) throw new Error(parsed.error);
+    let score = Math.max(0, Math.min(sceneDef.maxPts, Math.round(parsed.score)));
+    return {
+      score,
+      feedback: parsed.feedback || "",
+      strength: parsed.strength || "",
+      error: parsed.error || ""
+    };
+  } catch(e){
+    return heuristicEvaluate(sceneDef, studentText);
+  }
+}
+
+function heuristicEvaluate(sceneDef, text){
+  const t = (text || "").toLowerCase().trim();
+  if(!t){
+    return { score: 0, feedback: "No se registró una respuesta. (Evaluación estimada: no se pudo contactar al motor de evaluación.)", strength:"", error:"Respuesta vacía." };
+  }
+  const goodSignals = ["entiendo","comprendo","es comprensible","estoy aquí","acompañ","cómo te sientes","necesitas","tu ritmo","cuando quieras","tranquil","apoyo","seguro","ayuda"];
+  const badSignals = ["cálmate","calmate","tranquila ya","no pasa nada","todos vamos a estar bien","cuéntame exactamente","cuentame exactamente","seguro que no"];
+  let score = Math.min(sceneDef.maxPts, Math.round(sceneDef.maxPts * 0.55));
+  goodSignals.forEach(s => { if(t.includes(s)) score = Math.min(sceneDef.maxPts, score + 1); });
+  badSignals.forEach(s => { if(t.includes(s)) score = Math.max(0, score - 2); });
+  return {
+    score,
+    feedback: "Evaluación estimada localmente (no se pudo contactar al motor de evaluación en línea). Revisa esta respuesta con tu docente.",
+    strength: "", error: ""
+  };
+}
+
+/* ============================================================
+   ALMACENAMIENTO — modo docente
+   Guarda y lista las sesiones a través de la Netlify Function
+   /sessions, que usa Netlify Blobs como base de datos.
+   ============================================================ */
+
+async function saveSession(){
+  try{
+    const response = await fetch("/.netlify/functions/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentName: state.studentName,
+        caseTitle: currentCase.tituloCorto,
+        caseTag: currentCase.tag,
+        startTime: state.startTime,
+        endTime: state.endTime,
+        scores: state.scores,
+        log: state.log,
+        errors: state.errors,
+        total: totalScore()
+      })
+    });
+    if(!response.ok) throw new Error(`No se pudo guardar la sesión (${response.status})`);
+  } catch(e){ /* almacenamiento no disponible; el reporte sigue visible en pantalla */ }
+}
+
+async function loadSessions(){
+  try{
+    const response = await fetch("/.netlify/functions/sessions");
+    if(!response.ok) throw new Error(`No se pudieron cargar las sesiones (${response.status})`);
+    const data = await response.json();
+    teacherState.sessions = data.sessions || [];
+  } catch(e){
+    teacherState.sessions = [];
+  }
+}
+
+/* ============================================================
+   CÁLCULO DE PUNTAJE Y REPORTE
+   ============================================================ */
+
+function totalScore(){
+  return Object.values(state.scores).reduce((a,b) => a + b, 0);
+}
+
+function performanceLevel(total){
+  if(total >= 90) return { label: "Excelente", cls: "level-excelente" };
+  if(total >= 80) return { label: "Adecuado", cls: "level-adecuado" };
+  if(total >= 70) return { label: "En desarrollo", cls: "level-desarrollo" };
+  return { label: "Requiere fortalecimiento", cls: "level-fortalecimiento" };
+}
+
+/* ============================================================
+   RENDERIZADO
+   ============================================================ */
+
+const app = document.getElementById("app");
+
+function render(){
+  app.innerHTML = "";
+  app.appendChild(renderHeader());
+  if(activeTab === "teacher" && teacherUnlocked){
+    app.appendChild(renderTeacherMode());
+    return;
+  }
+  if(activeTab === "teacher" && !teacherUnlocked){
+    activeTab = "sim";
+  }
+  if(!state || state.view === "intro"){
+    app.appendChild(renderIntro());
+  } else if(state.view === "sim"){
+    app.appendChild(renderPhaseTrack());
+    app.appendChild(renderScene());
+  } else if(state.view === "report"){
+    app.appendChild(renderReport());
+  }
+}
+
+function renderHeader(){
+  const wrap = document.createElement("div");
+  const caseLabel = (state && state.view !== "intro" && currentCase)
+    ? `${currentCase.tag} · <strong>${currentCase.nombre}, ${currentCase.edad} años</strong>`
+    : "Selección de caso pendiente";
+  wrap.innerHTML = `
+    <div class="casefile-header">
+      <div class="casefile-title">Simulación PAP · ${caseLabel}</div>
+      <div class="tabbar">
+        <div class="tab ${activeTab==='sim'?'active':''}" data-tab="sim">Simulación</div>
+        <div class="tab ${activeTab==='teacher'?'active':''}" data-tab="teacher">Modo docente</div>
+      </div>
+    </div>
+  `;
+  wrap.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+    const target = t.dataset.tab;
+    if(target === "teacher"){
+      requestTeacherAccess(() => {
+        activeTab = "teacher";
+        loadSessions().then(render);
+      });
+      return;
+    }
+    activeTab = target;
+    render();
+  }));
+  return wrap;
+}
+
+function renderIntro(){
+  const introState = state && state.view === "intro" ? state : freshState();
+  state = introState;
+
+  const wrap = document.createElement("div");
+  wrap.className = "panel intro-block";
+
+  let html = `
+    <span class="scene-label">Entrenamiento en Primeros Auxilios Psicológicos</span>
+    <h1>Simulador de intervención en crisis</h1>
+    <p class="sub">Asumirás el rol de estudiante de Psicología brindando Primeros Auxilios Psicológicos (PAP) en el lugar de una emergencia. No se trata de psicoterapia ni de diagnóstico: se trata de aplicar los principios y límites propios de los PAP.</p>
+    <label class="field-label">Nombre del/de la estudiante</label>
+    <input class="name-input" id="studentNameInput" type="text" placeholder="Escribe tu nombre completo" value="${state.studentName}">
+    <label class="field-label">Caso de la simulación</label>
+    <div class="case-picker" id="casePicker">
+  `;
+  const opts = [{ id: "aleatorio", tituloCorto: "Caso aleatorio", descripcion: "El simulador elige un caso distinto cada vez que inicias o reinicias la simulación." }, ...CASES];
+  opts.forEach(o => {
+    const selected = state.caseChoice === o.id;
+    html += `
+      <label class="case-option ${selected ? "selected" : ""}" data-case-id="${o.id}">
+        <input type="radio" name="caseChoice" value="${o.id}" ${selected ? "checked" : ""}>
+        <div>
+          <div class="case-title">${o.tag ? o.tag + " — " : ""}${o.tituloCorto}</div>
+          <div class="case-desc">${o.descripcion}</div>
+        </div>
+      </label>
+    `;
+  });
+  html += `</div>
+    <button class="btn-primary" id="startBtn">Comenzar simulación</button>
+    <div class="disclaimer">Este simulador tiene una finalidad estrictamente educativa. No sustituye la formación clínica supervisada ni la práctica bajo supervisión docente.</div>
+  `;
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll(".case-option").forEach(el => {
+    el.addEventListener("click", () => {
+      state.caseChoice = el.dataset.caseId;
+      wrap.querySelectorAll(".case-option").forEach(o => o.classList.remove("selected"));
+      el.classList.add("selected");
+      el.querySelector("input").checked = true;
+    });
+  });
+
+  wrap.querySelector("#startBtn").addEventListener("click", () => {
+    const name = wrap.querySelector("#studentNameInput").value.trim();
+    if(!name){ wrap.querySelector("#studentNameInput").focus(); return; }
+    currentCase = pickCase(state.caseChoice);
+    SCENES = buildScenes(currentCase);
+    const caseChoice = state.caseChoice;
+    state = freshState();
+    state.studentName = name;
+    state.caseChoice = caseChoice;
+    state.startTime = Date.now();
+    state.view = "sim";
+    render();
+  });
+  return wrap;
+}
+
+function renderPhaseTrack(){
+  const scene = SCENES[state.sceneId];
+  const phases = [
+    { id: "mirar", label: "Mirar" },
+    { id: "escuchar", label: "Escuchar" },
+    { id: "conectar", label: "Conectar" }
+  ];
+  const currentIdx = phases.findIndex(p => p.id === scene.phase);
+  const wrap = document.createElement("div");
+  wrap.className = "phase-track";
+  phases.forEach((p, i) => {
+    const step = document.createElement("div");
+    step.className = "phase-step " + (i < currentIdx ? "done" : i === currentIdx ? "current" : "");
+    step.innerHTML = `<div class="phase-dot"></div><span>${p.label}</span>`;
+    wrap.appendChild(step);
+    if(i < phases.length - 1){
+      const line = document.createElement("div");
+      line.className = "phase-line";
+      wrap.appendChild(line);
+    }
+  });
+  return wrap;
+}
+
+function renderScene(){
+  const scene = SCENES[state.sceneId];
+  const panel = document.createElement("div");
+  panel.className = "panel";
+
+  let html = `<span class="scene-label">${scene.label}</span><p class="narrative">${scene.narrative}</p>`;
+  if(scene.characterLine){
+    html += `<div class="character-line">${scene.characterLine}</div>`;
+  }
+  panel.innerHTML = html;
+
+  if(scene.type === "info"){
+    const btnRow = document.createElement("div");
+    btnRow.className = "submit-row";
+    btnRow.innerHTML = `<button class="btn-primary">Continuar</button>`;
+    btnRow.querySelector("button").addEventListener("click", () => advanceScene(scene.next));
+    panel.appendChild(btnRow);
+    return panel;
+  }
+
+  if(scene.type === "choice"){
+    const optsWrap = document.createElement("div");
+    optsWrap.className = "options";
+    optsWrap.style.marginTop = "18px";
+    scene.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = `<span class="option-letter">${String.fromCharCode(97+i)})</span>${opt.text}`;
+      btn.addEventListener("click", () => handleChoice(scene, opt, i));
+      optsWrap.appendChild(btn);
+    });
+    panel.appendChild(optsWrap);
+    return panel;
+  }
+
+  if(scene.type === "free"){
+    const q = document.createElement("p");
+    q.className = "prompt-q";
+    q.textContent = scene.prompt;
+    panel.appendChild(q);
+    const ta = document.createElement("textarea");
+    ta.className = "freeform";
+    ta.placeholder = "Escribe tu respuesta con tus propias palabras...";
+    panel.appendChild(ta);
+    const row = document.createElement("div");
+    row.className = "submit-row";
+    const btn = document.createElement("button");
+    btn.className = "btn-primary";
+    btn.textContent = "Enviar respuesta";
+    row.appendChild(btn);
+    panel.appendChild(row);
+
+    btn.addEventListener("click", async () => {
+      const text = ta.value.trim();
+      if(!text){ ta.focus(); return; }
+      btn.disabled = true; btn.textContent = "Evaluando...";
+      const loading = document.createElement("div");
+      loading.className = "loading-line";
+      loading.textContent = "Analizando la respuesta en el contexto clínico de la escena...";
+      panel.appendChild(loading);
+      const result = await evaluateFreeResponse(state.sceneId, scene, text);
+      handleFreeResponse(scene, text, result);
+    });
+    return panel;
+  }
+}
+
+function handleChoice(scene, opt, idx){
+  state.scores[scene.category] = Math.max(0, state.scores[scene.category] + opt.pts);
+
+  const sceneId = state.sceneId;
+  const penaltyMap = ETHICS_PENALTIES[sceneId];
+  if(penaltyMap && penaltyMap[idx]){
+    state.scores.etica = Math.max(0, state.scores.etica - penaltyMap[idx]);
+  }
+
+  if(opt.error) state.errors.push({ scene: scene.label, text: opt.error });
+
+  state.log.push({
+    scene: scene.label, type: "opción elegida", text: opt.text,
+    error: opt.error || null
+  });
+
+  const nextId = opt.next || scene.next;
+  if(sceneId === "senal_riesgo"){
+    state.riskHandled = (nextId === "riesgo_explorado");
+  }
+  advanceScene(nextId);
+}
+
+function handleFreeResponse(scene, text, result){
+  state.scores[scene.category] = Math.max(0, state.scores[scene.category] + result.score);
+  state.log.push({
+    scene: scene.label, type: "respuesta escrita", text,
+    feedback: result.feedback, strength: result.strength, error: result.error
+  });
+  if(result.error) state.errors.push({ scene: scene.label, text: result.error });
+  advanceScene(scene.next);
+}
+
+function advanceScene(nextId){
+  if(nextId === "END"){
+    state.endTime = Date.now();
+    state.view = "report";
+    saveSession();
+    render();
+    return;
+  }
+  state.sceneId = nextId;
+  render();
+}
+
+/* ============================================================
+   REPORTE FINAL
+   ============================================================ */
+
+function renderReport(){
+  const total = Math.round(totalScore());
+  const level = performanceLevel(total);
+  const wrap = document.createElement("div");
+  wrap.className = "panel";
+
+  const strengths = state.log.filter(l => l.strength).map(l => l.strength);
+  const omitted = [];
+  if(state.riskHandled === false) omitted.push("Indagación directa sobre riesgo de autolesión/suicidio (señal de alerta no explorada).");
+
+  let html = `
+    <div class="score-hero">
+      <div class="score-circle"><span class="num">${total}</span><span class="den">/ 100</span></div>
+      <div>
+        <span class="level-tag ${level.cls}">${level.label}</span>
+        <div style="font-family:var(--serif); font-size:19px; margin-top:4px;">Reporte de desempeño — ${escapeHtml(state.studentName)}</div>
+        <div style="font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:2px;">Caso: ${escapeHtml(currentCase.tituloCorto)} · Tiempo utilizado: ${formatDuration(state.endTime - state.startTime)}</div>
+      </div>
+    </div>
+    <div class="report-section"><h3>Puntaje por competencia</h3>
+      ${Object.keys(MAX_SCORES).map(k => barRow(k)).join("")}
+    </div>
+  `;
+  wrap.innerHTML = html;
+
+  const strengthsSection = section("Fortalezas identificadas",
+    strengths.length ? strengths.map(s => `<li class="tag-strength">${escapeHtml(s)}</li>`).join("")
+      : `<li>Se identificarán fortalezas específicas a medida que se registren respuestas escritas de calidad.</li>`);
+  wrap.appendChild(strengthsSection);
+
+  const errorsSection = section("Errores detectados",
+    state.errors.length ? state.errors.map(e => `<li class="tag-error"><strong>${escapeHtml(e.scene)}:</strong> ${escapeHtml(e.text)}</li>`).join("")
+      : `<li>No se registraron errores significativos durante la simulación.</li>`);
+  wrap.appendChild(errorsSection);
+
+  const riskSection = section("Decisiones de riesgo",
+    state.riskHandled === false
+      ? `<li class="tag-risk">Se omitió explorar una señal directa de posible riesgo de autolesión/suicidio expresada por la persona en crisis.</li>`
+      : state.riskHandled === true
+        ? `<li>La señal de riesgo presentada fue explorada de forma directa y apropiada.</li>`
+        : `<li>No se presentaron decisiones de alto riesgo adicionales en esta simulación.</li>`);
+  wrap.appendChild(riskSection);
+
+  const omittedSection = section("Información que se omitió obtener",
+    omitted.length ? omitted.map(o => `<li>${escapeHtml(o)}</li>`).join("")
+      : `<li>No se identificaron omisiones relevantes de información en esta simulación.</li>`);
+  wrap.appendChild(omittedSection);
+
+  const recSection = section("Qué habría sido recomendable hacer",
+    buildRecommendations().map(r => `<li>${escapeHtml(r)}</li>`).join(""));
+  wrap.appendChild(recSection);
+
+  const feedbackSection = section("Retroalimentación específica",
+    state.log.filter(l => l.feedback).map(l => `<li><strong>${escapeHtml(l.scene)}:</strong> ${escapeHtml(l.feedback)}</li>`).join("")
+      || "<li>Sin observaciones adicionales.</li>");
+  wrap.appendChild(feedbackSection);
+
+  const closing = document.createElement("div");
+  closing.className = "disclaimer";
+  closing.style.marginTop = "24px";
+  closing.textContent = "Este resultado tiene fines formativos. Revisa este reporte junto a tu docente para profundizar en tu proceso de aprendizaje. El simulador no reemplaza la práctica clínica supervisada.";
+  wrap.appendChild(closing);
+
+  const restartRow = document.createElement("div");
+  restartRow.style.marginTop = "20px";
+  const restartBtn = document.createElement("button");
+  restartBtn.className = "btn-secondary";
+  restartBtn.textContent = "Reiniciar con un nuevo caso";
+  restartBtn.addEventListener("click", () => { state = freshState(); currentCase = null; SCENES = null; render(); });
+  restartRow.appendChild(restartBtn);
+  wrap.appendChild(restartRow);
+
+  return wrap;
+}
+
+function barRow(key){
+  const val = Math.round(state.scores[key] * 10) / 10;
+  const max = MAX_SCORES[key];
+  const pct = Math.max(0, Math.min(100, (val / max) * 100));
+  return `<div class="bar-row">
+    <div class="bar-label">${CATEGORY_LABELS[key]}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+    <div class="bar-val">${val}/${max}</div>
+  </div>`;
+}
+
+function section(title, innerHtml){
+  const s = document.createElement("div");
+  s.className = "report-section";
+  s.innerHTML = `<h3>${title}</h3><ul>${innerHtml}</ul>`;
+  return s;
+}
+
+function buildRecommendations(){
+  const recs = [];
+  if(state.riskHandled === false) recs.push("Ante cualquier expresión de desesperanza o ideas de \"no querer seguir\", preguntar siempre de forma directa y calmada por pensamientos de autolesión o suicidio.");
+  if(state.scores.comunicacion < 14) recs.push("Reforzar la validación emocional y evitar frases como \"cálmate\" o preguntas que presionen el relato del evento.");
+  if(state.scores.necesidades < 14) recs.push("Ampliar la exploración de necesidades inmediatas: seguridad física, red de apoyo y estado emocional, antes de avanzar a la intervención.");
+  if(state.scores.etica < 4) recs.push("Revisar los límites de la confidencialidad cuando existe riesgo para la vida, y evitar el uso de técnicas psicoterapéuticas fuera del alcance de los PAP.");
+  if(state.scores.recursos < 7) recs.push("Priorizar la activación de la propia red de apoyo de la persona en lugar de asumir la responsabilidad de resolver todo.");
+  if(state.scores.derivacion < 7) recs.push("Fundamentar con mayor claridad cuándo y por qué corresponde derivar a apoyo profesional.");
+  if(!recs.length) recs.push("Continúa consolidando la aplicación integrada de los principios de Mirar, Escuchar y Conectar en distintos escenarios de crisis.");
+  return recs;
+}
+
+function formatDuration(ms){
+  const totalSec = Math.max(0, Math.round(ms/1000));
+  const m = Math.floor(totalSec/60), s = totalSec%60;
+  return `${m} min ${s.toString().padStart(2,"0")} s`;
+}
+
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : String(str);
+  return d.innerHTML;
+}
+
+/* ============================================================
+   MODO DOCENTE
+   ============================================================ */
+
+function renderTeacherMode(){
+  const wrap = document.createElement("div");
+  wrap.className = "panel";
+  wrap.innerHTML = `<span class="scene-label">Modo docente</span><p class="narrative" style="font-size:14.5px;">Registro de simulaciones completadas por estudiantes (almacenamiento compartido).</p>`;
+
+  const list = document.createElement("div");
+  list.style.marginTop = "18px";
+
+  if(!teacherState.sessions.length){
+    const empty = document.createElement("div");
+    empty.className = "empty-note";
+    empty.textContent = "Aún no hay simulaciones registradas, o no fue posible acceder al almacenamiento.";
+    list.appendChild(empty);
+  } else {
+    teacherState.sessions.forEach((s, idx) => {
+      const row = document.createElement("div");
+      row.className = "session-row";
+      const level = performanceLevel(s.total);
+      row.innerHTML = `
+        <div class="session-row-head">
+          <span class="name">${escapeHtml(s.studentName)}</span>
+          <span class="meta">${escapeHtml(s.caseTag || "")} ${escapeHtml(s.caseTitle || "")} · ${new Date(s.startTime).toLocaleString("es-CO")} · ${Math.round(s.total)}/100 · ${level.label}</span>
+        </div>
+        <div class="session-detail" id="detail-${idx}"></div>
+      `;
+      row.addEventListener("click", () => {
+        const detail = row.querySelector(".session-detail");
+        const isOpen = detail.classList.contains("open");
+        if(!isOpen && !detail.dataset.built){
+          detail.appendChild(buildTeacherDetail(s));
+          detail.dataset.built = "1";
+        }
+        detail.classList.toggle("open");
+      });
+      list.appendChild(row);
+    });
+  }
+
+  wrap.appendChild(list);
+  return wrap;
+}
+
+function buildTeacherDetail(s){
+  const frag = document.createElement("div");
+  const dur = s.endTime ? formatDuration(s.endTime - s.startTime) : "—";
+
+  let html = `<div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-bottom:12px;">Tiempo utilizado: ${dur}</div>`;
+  html += `<div class="report-section" style="margin-top:0;"><h3 style="margin-top:0;">Puntaje por competencia</h3>`;
+  Object.keys(MAX_SCORES).forEach(k => {
+    const val = Math.round((s.scores[k]||0) * 10)/10;
+    html += `<div class="bar-row"><div class="bar-label">${CATEGORY_LABELS[k]}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(val/MAX_SCORES[k])*100)}%;"></div></div><div class="bar-val">${val}/${MAX_SCORES[k]}</div></div>`;
+  });
+  html += `</div>`;
+
+  html += `<h3 style="font-family:var(--sans); font-size:13px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); margin:20px 0 10px;">Errores frecuentes</h3>`;
+  html += s.errors && s.errors.length
+    ? `<ul>${s.errors.map(e => `<li class="tag-error"><strong>${escapeHtml(e.scene)}:</strong> ${escapeHtml(e.text)}</li>`).join("")}</ul>`
+    : `<p style="font-size:13px; color:var(--ink-soft);">Sin errores registrados.</p>`;
+
+  html += `<h3 style="font-family:var(--sans); font-size:13px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); margin:20px 0 10px;">Decisiones y respuestas escritas</h3>`;
+  frag.innerHTML = html;
+
+  const logWrap = document.createElement("div");
+  (s.log || []).forEach(l => {
+    const entry = document.createElement("div");
+    entry.className = "log-entry";
+    entry.innerHTML = `<div class="scene-tag">${escapeHtml(l.scene)} · ${escapeHtml(l.type)}</div><div>${escapeHtml(l.text)}</div>${l.feedback ? `<div style="color:var(--teal-deep); margin-top:4px;">↳ ${escapeHtml(l.feedback)}</div>` : ""}`;
+    logWrap.appendChild(entry);
+  });
+  frag.appendChild(logWrap);
+  return frag;
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+
+render();
+
+})();
+</script>
+</body>
+</html>

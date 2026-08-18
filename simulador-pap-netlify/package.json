@@ -1,0 +1,9 @@
+{
+  "name": "simulador-pap",
+  "version": "1.0.0",
+  "description": "Simulador de Primeros Auxilios Psicológicos (PAP) con Netlify Functions",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
