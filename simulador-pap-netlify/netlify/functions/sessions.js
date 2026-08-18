@@ -21,7 +21,17 @@ exports.handler = async (event) => {
     return { statusCode: 204, headers, body: "" };
   }
 
-  const store = getStore("pap-sessions");
+  // Netlify normalmente inyecta el contexto de Blobs automáticamente, pero
+  // en algunos despliegues (por ejemplo al usar "Base directory") esa
+  // detección automática falla. Por eso pasamos siteID y token de forma
+  // explícita, usando variables de entorno configuradas en el sitio.
+  const store = (process.env.NETLIFY_SITE_ID && process.env.NETLIFY_BLOBS_TOKEN)
+    ? getStore({
+        name: "pap-sessions",
+        siteID: process.env.NETLIFY_SITE_ID,
+        token: process.env.NETLIFY_BLOBS_TOKEN
+      })
+    : getStore("pap-sessions");
 
   if (event.httpMethod === "GET") {
     try {
