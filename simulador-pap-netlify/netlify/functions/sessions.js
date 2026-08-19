@@ -1,11 +1,12 @@
 // netlify/functions/sessions.js
 //
-// Guarda y lista las sesiones completadas por los estudiantes, usando
-// Netlify Blobs (almacenamiento clave-valor incluido en Netlify, sin
-// necesidad de contratar una base de datos externa).
+// Guarda, lista y borra las sesiones completadas por los estudiantes,
+// usando Netlify Blobs (almacenamiento clave-valor incluido en Netlify,
+// sin necesidad de contratar una base de datos externa).
 //
-// GET  /.netlify/functions/sessions        -> devuelve todas las sesiones
-// POST /.netlify/functions/sessions        -> guarda una sesión nueva
+// GET    /.netlify/functions/sessions        -> devuelve todas las sesiones
+// POST   /.netlify/functions/sessions        -> guarda una sesión nueva
+// DELETE /.netlify/functions/sessions        -> borra una sesión por su key
 
 const { getStore } = require("@netlify/blobs");
 
@@ -14,7 +15,7 @@ exports.handler = async (event) => {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS"
   };
 
   if (event.httpMethod === "OPTIONS") {
@@ -40,7 +41,7 @@ exports.handler = async (event) => {
       for (const b of blobs) {
         try {
           const value = await store.get(b.key, { type: "json" });
-          if (value) sessions.push(value);
+          if (value) sessions.push(Object.assign({ key: b.key }, value));
         } catch (e) {
           // ignora entradas corruptas individuales
         }
@@ -66,5 +67,19 @@ exports.handler = async (event) => {
     }
   }
 
+  if (event.httpMethod === "DELETE") {
+    try {
+      const { key } = JSON.parse(event.body || "{}");
+      if (!key) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "Falta la key de la sesión." }) };
+      }
+      await store.delete(key);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    } catch (e) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: e.message }) };
+    }
+  }
+
   return { statusCode: 405, headers, body: JSON.stringify({ error: "Método no permitido." }) };
 };
+
