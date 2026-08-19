@@ -211,6 +211,21 @@
   .case-form textarea{min-height:64px; resize:vertical;}
   .case-form .full{grid-column:1 / -1;}
   .case-form-actions{display:flex; gap:10px; margin-top:8px;}
+  .image-upload-row{display:flex; gap:16px; align-items:center; margin-bottom:6px;}
+  .image-preview{
+    width:130px; height:88px; border:1.5px dashed var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; align-items:center; justify-content:center;
+    background:var(--panel-raised); font-size:11px; color:var(--muted); flex-shrink:0; text-align:center;
+  }
+  .image-preview img{width:100%; height:100%; object-fit:cover;}
+  .image-upload-controls{display:flex; flex-direction:column; gap:8px;}
+  .image-upload-controls input[type="file"]{font-size:12.5px;}
+  .case-admin-thumb{
+    width:44px; height:44px; border-radius:var(--radius); overflow:hidden; flex-shrink:0;
+    background:var(--sage-soft); display:flex; align-items:center; justify-content:center; color:var(--teal-deep);
+  }
+  .case-admin-thumb img{width:100%; height:100%; object-fit:cover;}
+  .case-admin-thumb svg{width:24px; height:24px;}
 
   .score-hero{display:flex; align-items:center; gap:26px; margin-bottom:24px;}
   .score-circle{
@@ -640,6 +655,34 @@ async function refreshEffectiveCases(){
   return EFFECTIVE_CASES;
 }
 
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if(width > height && width > maxDim){
+          height = Math.round(height * (maxDim / width));
+          width = maxDim;
+        } else if(height >= width && height > maxDim){
+          width = Math.round(width * (maxDim / height));
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => reject(new Error("No se pudo leer la imagen."));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function slugify(text){
   return (text || "caso")
     .toLowerCase()
@@ -825,7 +868,7 @@ function renderCaseBanner(){
   const wrap = document.createElement("div");
   wrap.className = "case-banner";
   wrap.innerHTML = `
-    <div class="case-icon">${caseIcon(currentCase.id)}</div>
+    <div class="case-icon">${currentCase.imageDataUrl ? `<img src="${currentCase.imageDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : caseIcon(currentCase.id)}</div>
     <div>
       <span class="case-banner-tag">${escapeHtml(currentCase.tag || "Caso")} · ${escapeHtml(currentCase.nombre)}, ${escapeHtml(String(currentCase.edad))} años</span>
       <div class="case-banner-title">${escapeHtml(currentCase.tituloCorto)}</div>
@@ -886,7 +929,7 @@ function renderIntro(){
     html += `
       <label class="case-option ${selected ? "selected" : ""}" data-case-id="${o.id}">
         <input type="radio" name="caseChoice" value="${o.id}" ${selected ? "checked" : ""}>
-        <div class="case-icon">${o.id === "aleatorio" ? CASE_ICONS.generico : caseIcon(o.id)}</div>
+        <div class="case-icon">${o.imageDataUrl ? `<img src="${o.imageDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;">` : (o.id === "aleatorio" ? CASE_ICONS.generico : caseIcon(o.id))}</div>
         <div>
           <div class="case-title">${o.tag ? o.tag + " — " : ""}${o.tituloCorto}</div>
           <div class="case-desc">${o.descripcion}</div>
@@ -1248,9 +1291,12 @@ function renderCaseEditor(){
     const row = document.createElement("div");
     row.className = "case-admin-row";
     row.innerHTML = `
-      <div>
-        <div class="case-admin-title">${escapeHtml(c.tag ? c.tag + " — " : "")}${escapeHtml(c.tituloCorto)}</div>
-        <div class="case-admin-desc">${escapeHtml(c.descripcion)}</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="case-admin-thumb">${c.imageDataUrl ? `<img src="${c.imageDataUrl}">` : caseIcon(c.id)}</div>
+        <div>
+          <div class="case-admin-title">${escapeHtml(c.tag ? c.tag + " — " : "")}${escapeHtml(c.tituloCorto)}</div>
+          <div class="case-admin-desc">${escapeHtml(c.descripcion)}</div>
+        </div>
       </div>
       <div class="case-admin-actions">
         <button class="btn-mini" data-act="edit">Editar</button>
@@ -1312,6 +1358,16 @@ function buildCaseForm(editingId){
   const form = document.createElement("div");
   form.className = "case-form";
   form.innerHTML = `<h3 style="font-family:var(--sans); font-size:13px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); margin:0 0 12px;">${isNew ? "Nuevo caso" : "Editar caso"}</h3>
+    <div class="full" style="margin-bottom:16px;">
+      <label>Imagen del caso (opcional)</label>
+      <div class="image-upload-row">
+        <div class="image-preview" id="imagePreview">${data.imageDataUrl ? `<img src="${data.imageDataUrl}">` : "Sin imagen"}</div>
+        <div class="image-upload-controls">
+          <input type="file" accept="image/*" id="imageFileInput">
+          <button type="button" class="btn-mini danger" id="removeImageBtn" style="${data.imageDataUrl ? "" : "display:none;"}">Quitar imagen</button>
+        </div>
+      </div>
+    </div>
     <div class="form-grid">
       ${CASE_FORM_FIELDS.map(f => `
         <div class="${f.full ? "full" : ""}">
@@ -1327,6 +1383,27 @@ function buildCaseForm(editingId){
       <button class="btn-secondary" id="cancelCaseBtn">Cancelar</button>
     </div>
   `;
+
+  let currentImageDataUrl = data.imageDataUrl || null;
+  const imagePreview = form.querySelector("#imagePreview");
+  const removeImageBtn = form.querySelector("#removeImageBtn");
+  form.querySelector("#imageFileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/")){ window.alert("Selecciona un archivo de imagen."); return; }
+    try{
+      currentImageDataUrl = await resizeImageFile(file, 640, 0.78);
+      imagePreview.innerHTML = `<img src="${currentImageDataUrl}">`;
+      removeImageBtn.style.display = "";
+    } catch(err){
+      window.alert("No se pudo procesar la imagen: " + err.message);
+    }
+  });
+  removeImageBtn.addEventListener("click", () => {
+    currentImageDataUrl = null;
+    imagePreview.textContent = "Sin imagen";
+    removeImageBtn.style.display = "none";
+  });
 
   form.querySelector("#cancelCaseBtn").addEventListener("click", () => {
     teacherState.editingCaseId = null;
@@ -1344,6 +1421,7 @@ function buildCaseForm(editingId){
     }
     values.edad = Number(values.edad) || values.edad;
     values.id = isNew ? `custom_${slugify(values.tituloCorto)}_${Date.now().toString(36)}` : editingId;
+    values.imageDataUrl = currentImageDataUrl;
 
     const btn = form.querySelector("#saveCaseBtn");
     btn.disabled = true; btn.textContent = "Guardando...";
