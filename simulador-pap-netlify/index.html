@@ -8,22 +8,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #ECE9E2;
-    --panel: #FBFAF7;
+    --bg: #16332F;
+    --bg-panel-shadow: rgba(10,30,27,.18);
+    --panel: #FCF9F0;
     --panel-raised: #FFFFFF;
-    --ink: #1E2B2B;
-    --ink-soft: #4B5B5B;
-    --line: #D8D3C8;
-    --teal: #2F6F6B;
-    --teal-deep: #1F4E4B;
-    --brick: #A8453A;
-    --brick-soft: #F1DFDB;
-    --sage: #6F8F6A;
-    --sage-soft: #E3EBDF;
-    --amber: #B08A2E;
-    --amber-soft: #F3E8D2;
-    --muted: #899390;
-    --radius: 3px;
+    --ink: #16211F;
+    --ink-soft: #445350;
+    --line: #DED6C2;
+    --teal: #2F9E93;
+    --teal-deep: #0F5C55;
+    --brick: #C24A3B;
+    --brick-soft: #F7DCD6;
+    --sage: #6FA867;
+    --sage-soft: #E3F0DF;
+    --amber: #CE9A2C;
+    --amber-soft: #F8ECCF;
+    --muted: #7C8985;
+    --header-fg: #F3EFE1;
+    --header-fg-soft: #BFD3CE;
+    --radius: 4px;
     --serif: 'Source Serif 4', Georgia, serif;
     --sans: 'IBM Plex Sans', -apple-system, sans-serif;
     --mono: 'IBM Plex Mono', monospace;
@@ -32,30 +35,48 @@
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
+    background-image: radial-gradient(circle at 15% 0%, #1C3F3A 0%, var(--bg) 55%);
     color:var(--ink);
     font-family:var(--sans);
-    line-height:1.5;
+    font-size:15.5px;
+    line-height:1.55;
     min-height:100vh;
   }
-  .app{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  .app{max-width:940px;margin:0 auto;padding:28px 20px 80px;}
 
   .casefile-header{
     display:flex; justify-content:space-between; align-items:flex-end;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:10px; margin-bottom:6px;
+    border-bottom:2px solid var(--header-fg-soft);
+    padding-bottom:12px; margin-bottom:16px;
   }
   .casefile-title{
-    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--ink-soft);
+    font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--header-fg-soft);
   }
-  .casefile-title strong{color:var(--ink); font-weight:600;}
+  .casefile-title strong{color:var(--header-fg); font-weight:600;}
   .tabbar{display:flex; gap:2px;}
   .tab{
     font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
-    padding:7px 14px; cursor:pointer; border:1px solid var(--ink); border-bottom:none;
-    background:var(--bg); color:var(--ink-soft);
+    padding:8px 16px; cursor:pointer; border:1px solid var(--header-fg-soft); border-bottom:none;
+    background:transparent; color:var(--header-fg-soft);
   }
-  .tab.active{background:var(--ink); color:var(--panel);}
+  .tab.active{background:var(--header-fg); color:var(--teal-deep); border-color:var(--header-fg);}
+
+  .case-banner{
+    display:flex; align-items:center; gap:14px;
+    background:linear-gradient(135deg, var(--teal-deep), #0B403B);
+    color:var(--header-fg); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:18px;
+    box-shadow:0 4px 14px var(--bg-panel-shadow);
+  }
+  .case-banner .case-icon{width:40px; height:40px; flex-shrink:0; color:var(--header-fg);}
+  .case-banner .case-icon svg{width:100%; height:100%;}
+  .case-banner .case-banner-tag{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:#9FD9CF; display:block; margin-bottom:2px;
+  }
+  .case-banner .case-banner-title{font-family:var(--serif); font-size:17px; font-weight:600;}
+  .case-banner .case-banner-desc{font-family:var(--sans); font-size:12.5px; color:var(--header-fg-soft); margin-top:2px;}
 
   .phase-track{
     display:flex; align-items:center; gap:0; margin:22px 0 26px;
@@ -70,38 +91,39 @@
 
   .panel{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:26px 28px; margin-bottom:18px;
+    padding:28px 30px; margin-bottom:18px;
+    box-shadow:0 6px 20px var(--bg-panel-shadow);
   }
   .scene-label{
-    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
-    color:var(--teal-deep); margin-bottom:10px; display:block;
+    font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--teal-deep); margin-bottom:10px; display:block; font-weight:600;
   }
   .narrative{
-    font-family:var(--serif); font-size:17px; color:var(--ink); line-height:1.65;
+    font-family:var(--serif); font-size:18.5px; color:var(--ink); line-height:1.68;
     margin-bottom:0;
   }
   .character-line{
-    font-family:var(--serif); font-style:italic; font-size:18px; color:var(--teal-deep);
-    background:var(--sage-soft); border-left:3px solid var(--sage);
+    font-family:var(--serif); font-style:italic; font-size:19px; color:var(--teal-deep);
+    background:var(--sage-soft); border-left:4px solid var(--sage);
     padding:14px 18px; margin-top:16px; border-radius:0 var(--radius) var(--radius) 0;
   }
   .prompt-q{
-    font-family:var(--sans); font-weight:600; font-size:14.5px; color:var(--ink);
+    font-family:var(--sans); font-weight:700; font-size:15.5px; color:var(--ink);
     margin:20px 0 12px;
   }
 
-  .options{display:flex; flex-direction:column; gap:9px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
   .option-btn{
-    text-align:left; background:var(--panel-raised); border:1px solid var(--line);
-    border-radius:var(--radius); padding:13px 16px 13px 44px; position:relative;
-    font-family:var(--sans); font-size:14.5px; color:var(--ink); cursor:pointer;
-    transition:border-color .15s, background .15s;
+    text-align:left; background:var(--panel-raised); border:1.5px solid var(--line);
+    border-radius:var(--radius); padding:14px 18px 14px 46px; position:relative;
+    font-family:var(--sans); font-size:15.5px; color:var(--ink); cursor:pointer;
+    transition:border-color .15s, background .15s, transform .1s;
   }
-  .option-btn:hover{border-color:var(--teal); background:#F5F8F7;}
+  .option-btn:hover{border-color:var(--teal); background:#F1F8F7; transform:translateX(1px);}
   .option-btn:focus-visible{outline:2px solid var(--teal); outline-offset:1px;}
   .option-letter{
-    position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    font-family:var(--mono); font-size:11.5px; color:var(--muted); font-weight:500;
+    position:absolute; left:15px; top:50%; transform:translateY(-50%);
+    font-family:var(--mono); font-size:12px; color:var(--teal-deep); font-weight:700;
   }
 
   textarea.freeform{
@@ -142,15 +164,53 @@
     border-left:3px solid var(--amber); padding:12px 16px; margin-top:20px; border-radius:0 var(--radius) var(--radius) 0;
   }
 
-  .case-picker{display:flex; flex-direction:column; gap:9px; margin-bottom:18px;}
+  .case-picker{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
   .case-option{
-    display:flex; align-items:flex-start; gap:10px; padding:12px 14px;
-    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel-raised); cursor:pointer;
+    display:flex; align-items:flex-start; gap:12px; padding:14px 16px;
+    border:1.5px solid var(--line); border-radius:var(--radius); background:var(--panel-raised); cursor:pointer;
   }
-  .case-option.selected{border-color:var(--teal); background:#F5F8F7;}
-  .case-option input{margin-top:3px;}
-  .case-option .case-title{font-weight:600; font-size:14px;}
-  .case-option .case-desc{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .case-option.selected{border-color:var(--teal); background:#F1F8F7;}
+  .case-option input{margin-top:4px;}
+  .case-option .case-icon{width:30px; height:30px; flex-shrink:0; color:var(--teal-deep); margin-top:1px;}
+  .case-option .case-icon svg{width:100%; height:100%;}
+  .case-option .case-title{font-weight:700; font-size:15px;}
+  .case-option .case-desc{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+
+  .teacher-subtabs{display:flex; gap:8px; margin:16px 0 20px;}
+  .teacher-subtab{
+    font-family:var(--sans); font-weight:600; font-size:13px; padding:8px 16px;
+    border:1.5px solid var(--line); border-radius:var(--radius); cursor:pointer;
+    background:var(--panel-raised); color:var(--ink-soft);
+  }
+  .teacher-subtab.active{background:var(--teal-deep); color:#fff; border-color:var(--teal-deep);}
+
+  .case-admin-row{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+    background:var(--panel-raised); border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:10px;
+  }
+  .case-admin-row.is-hidden{opacity:.55;}
+  .case-admin-row .case-admin-title{font-weight:700; font-size:14.5px;}
+  .case-admin-row .case-admin-desc{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .case-admin-actions{display:flex; gap:8px; flex-shrink:0;}
+  .btn-mini{
+    font-family:var(--sans); font-weight:600; font-size:12px; padding:7px 12px;
+    border-radius:var(--radius); cursor:pointer; border:1.5px solid var(--teal-deep);
+    background:transparent; color:var(--teal-deep);
+  }
+  .btn-mini.danger{border-color:var(--brick); color:var(--brick);}
+  .btn-mini.warn{border-color:var(--amber); color:#7A5C1E;}
+
+  .case-form{margin-top:16px; padding-top:16px; border-top:1px dashed var(--line);}
+  .case-form .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; margin-bottom:14px;}
+  .case-form label{display:block; font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:4px;}
+  .case-form input, .case-form textarea{
+    width:100%; font-family:var(--sans); font-size:13.5px; padding:9px 11px;
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel-raised); color:var(--ink);
+  }
+  .case-form textarea{min-height:64px; resize:vertical;}
+  .case-form .full{grid-column:1 / -1;}
+  .case-form-actions{display:flex; gap:10px; margin-top:8px;}
 
   .score-hero{display:flex; align-items:center; gap:26px; margin-bottom:24px;}
   .score-circle{
@@ -214,12 +274,23 @@
    reinicio, evitando que el estudiante memorice un único guion.
    ============================================================ */
 
+/* Íconos SVG en línea (no dependen de imágenes externas ni de internet)
+   usados en el selector de casos y en el banner permanente durante la
+   simulación, para ayudar a identificar visualmente cada caso. */
+const CASE_ICONS = {
+  accidente_transito: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"/><rect x="3" y="13" width="18" height="5" rx="1.2"/><circle cx="7.5" cy="18.5" r="1.4"/><circle cx="16.5" cy="18.5" r="1.4"/><path d="M12 2v3M12 2l-2 2M12 2l2 2"/></svg>`,
+  sismo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-5 8 5v12"/><path d="M4 21h16"/><path d="M9 21v-6h2l-1 3h2l-1 3"/><path d="M9 12h2l-1-2h2"/></svg>`,
+  perdida_subita: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4.2 2.2M12 21s7-4.35 9.5-9c1.5-3.5 0-7-3.5-7-1.7 0-3.1.8-3.9 1.8"/><path d="M8 12h2l1.2-2.4L12.8 14 14 12h2"/></svg>`,
+  generico: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/><path d="M19 3l1.3 1.3M20.3 3L19 4.3"/></svg>`
+};
+function caseIcon(id){ return CASE_ICONS[id] || CASE_ICONS.generico; }
+
 const CASES = [
   {
     id: "accidente_transito",
     tag: "Caso A",
     tituloCorto: "Testigo de un accidente de tránsito",
-    descripcion: "Una joven que presenció un accidente vehicular grave a pocos metros de ella.",
+    descripcion: "Camila, 21 años, presenció el choque entre el auto en el que iba con una amiga y una motocicleta; su amiga fue trasladada de urgencia y ella quedó sola en la escena.",
     nombre: "Camila", edad: 21,
     persona: "la joven", personaCap: "La joven", pron: "ella",
     acompanado: "acompañada", herido: "herida",
@@ -227,7 +298,7 @@ const CASES = [
     aperturaLine: "\"No sé qué hacer... no puedo dejar de pensar en lo que vi.\"",
     estadoInicial: "llorando de forma intermitente, con dificultad para organizar sus ideas",
     necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que tiene frío, que no sabe dónde quedó su teléfono, y que una amiga que iba con ella en el auto fue trasladada al hospital hace unos minutos. Nadie le ha revisado si ella misma tiene alguna lesión.",
-    senalRiesgoLine: "\"Desde que llegué aquí solo pienso que ya no vale la pena esforzarme en nada... como si esto fuera una señal de que ya no puedo más.\"",
+    senalRiesgoLine: "\"Desde que vi el auto de mi amiga así... no dejo de pensar que si algo le pasa a ella, ya no tendría sentido seguir esforzándome en nada. A veces siento que ojalá yo tampoco estuviera aquí.\"",
     riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que presenció el accidente, especialmente al pensar en su amiga herida. Se ve agotada y abrumada.",
     riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
   },
@@ -235,7 +306,7 @@ const CASES = [
     id: "sismo",
     tag: "Caso B",
     tituloCorto: "Sobreviviente de un sismo",
-    descripcion: "Un joven recién rescatado tras quedar atrapado brevemente durante un sismo, separado de su hermano menor.",
+    descripcion: "Andrés, 24 años, quedó atrapado unos minutos bajo un marco de puerta durante el sismo y perdió de vista a su hermano menor en medio de la evacuación del edificio.",
     nombre: "Andrés", edad: 24,
     persona: "el joven", personaCap: "El joven", pron: "él",
     acompanado: "acompañado", herido: "herido",
@@ -243,7 +314,7 @@ const CASES = [
     aperturaLine: "\"No sé qué hacer... todavía siento que el piso se sigue moviendo.\"",
     estadoInicial: "con la mirada fija en el edificio, respirando de forma agitada y con dificultad para hilar sus ideas",
     necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que quedó atrapado unos minutos bajo un marco de puerta antes de ser rescatado, que tiene un corte profundo en el brazo que nadie ha revisado, y que su hermano menor, con quien caminaba antes del sismo, se separó de él durante la evacuación y no sabe dónde está.",
-    senalRiesgoLine: "\"Desde que pasó esto solo pienso que ya no vale la pena esforzarme en nada... como si esto fuera una señal de que ya no puedo más.\"",
+    senalRiesgoLine: "\"Mientras estaba atrapado pensé que ya no iba a salir de ahí... y una parte de mí, sinceramente, no sé si le hubiera importado tanto. No sé si eso está mal de decir.\"",
     riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde el sismo, especialmente al no saber si su hermano está bien. Se ve agotado y abrumado.",
     riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
   },
@@ -251,7 +322,7 @@ const CASES = [
     id: "perdida_subita",
     tag: "Caso C",
     tituloCorto: "Notificación de una muerte súbita",
-    descripcion: "Una joven que acaba de recibir, en la sala de espera de un hospital, la noticia del fallecimiento repentino de su padre.",
+    descripcion: "Valentina, 22 años, llegó sola a urgencias y acaba de recibir la noticia de que su padre falleció por un paro cardíaco repentino; su familia vive en otra ciudad.",
     nombre: "Valentina", edad: 22,
     persona: "la joven", personaCap: "La joven", pron: "ella",
     acompanado: "acompañada", herido: "herida",
@@ -259,7 +330,7 @@ const CASES = [
     aperturaLine: "\"No puedo creerlo... no entiendo cómo pasó esto tan rápido.\"",
     estadoInicial: "con la mirada perdida, la respiración entrecortada y dificultad para mantenerse de pie con estabilidad",
     necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que llegó sola al hospital porque el resto de su familia vive en otra ciudad, que no ha comido nada desde la mañana, y que no sabe a quién avisar primero ni qué trámites debe realizar. Nadie le ha ofrecido agua ni un lugar donde sentarse con calma.",
-    senalRiesgoLine: "\"Desde que me dijeron esto solo pienso que ya no vale la pena seguir esforzándome en nada... como si ya no tuviera sentido seguir.\"",
+    senalRiesgoLine: "\"Mi papá era con quien yo resolvía todo... no sé cómo se supone que siga sola con esto. Hay un momento en que uno piensa que sería más fácil simplemente no tener que enfrentar nada de esto.\"",
     riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que recibió la noticia, especialmente al pensar en enfrentar sola los días siguientes. Se ve agotada y abrumada.",
     riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
   }
@@ -320,8 +391,8 @@ function buildScenes(c){
       category: "comunicacion",
       options: [
         { text: "Acercarte lentamente, mantener una distancia prudente y presentarte: \"Hola, soy [tu nombre], soy estudiante de psicología y estoy aquí para acompañarte, ¿está bien si converso contigo un momento?\"", pts: 6 },
-        { text: "Acercarte, ponerle la mano en el hombro y decirle: \"Tranquila, ya pasó, cálmate.\"", pts: -2,
-          error: "Se utilizó la frase \"cálmate\", que invalida la reacción emocional de la persona." },
+        { text: "Acercarte, ponerle la mano en el hombro y decirle: \"Entiendo que esto es muy fuerte, pero necesito que respires y te calmes un poco para poder ayudarte mejor.\"", pts: -2,
+          error: "Se le pidió a la persona que se calme, lo que invalida su reacción emocional en lugar de acompañarla." },
         { text: "Preguntar directamente: \"¿Puedes contarme exactamente qué pasó?\"", pts: 0,
           error: "Se presionó a la persona para relatar el evento traumático de forma prematura." },
         { text: "Quedarte cerca en silencio, esperando que hable primero, sin presentarte.", pts: 2,
@@ -351,8 +422,8 @@ function buildScenes(c){
       category: "comunicacion",
       options: [
         { text: "\"Es comprensible sentirte así después de algo tan impactante. Estoy aquí contigo.\"", pts: 6 },
-        { text: "\"No pasa nada, todos vamos a estar bien, ya vas a ver.\"", pts: -1,
-          error: "Se dio una falsa garantía sobre un resultado que no se puede prometer." },
+        { text: "\"Quédate tranquila, la gran mayoría de las personas se recupera bien de este tipo de situaciones con el paso del tiempo.\"", pts: -1,
+          error: "Se dio una garantía general sobre el resultado, en lugar de acompañar el malestar presente." },
         { text: "\"¿Puedes describirme exactamente la secuencia de lo que ocurrió, paso a paso?\"", pts: 0,
           error: "Se insistió en obtener el relato detallado del evento traumático." },
         { text: "Preguntarle su nombre y cómo se siente en este momento, sin pedirle detalles de lo ocurrido.", pts: 5 }
@@ -383,8 +454,8 @@ function buildScenes(c){
         { text: "Preguntarle si hay algún familiar o persona de confianza a quien pueda llamar en este momento.", pts: 5 },
         { text: "Comenzar a aplicar un ejercicio prolongado de respiración diafragmática con conteo, como en un protocolo clínico estructurado.", pts: -1,
           error: "Se utilizó una técnica estructurada de intervención psicoterapéutica que excede el alcance de los PAP." },
-        { text: "Decirle que todo pasa por una razón y que esta experiencia lo hará más fuerte.", pts: -1,
-          error: "Se ofreció un consejo personal/filosófico en lugar de una respuesta centrada en sus necesidades." }
+        { text: "Decirle que con el tiempo va a poder ver este momento desde otra perspectiva y que esto lo va a hacer una persona más fuerte.", pts: -1,
+          error: "Se ofreció un consejo personal/filosófico prematuro en lugar de una respuesta centrada en sus necesidades actuales." }
       ],
       next: "senal_riesgo"
     },
@@ -400,8 +471,8 @@ function buildScenes(c){
         { text: "Preguntarle de forma directa y calmada si en este momento ha tenido pensamientos de hacerse daño o de que no vale la pena seguir viviendo.", pts: 8, next: "riesgo_explorado" },
         { text: "Cambiar de tema para no incomodarlo más de lo que ya está.", pts: 0,
           error: "Se pasó por alto una posible señal de riesgo sin explorarla.", next: "riesgo_omitido" },
-        { text: "Decirle: \"No digas eso, seguro no lo piensas en serio.\"", pts: -1,
-          error: "Se minimizó una posible señal de riesgo en lugar de explorarla.", next: "riesgo_omitido" },
+        { text: "Decirle: \"No pienses en eso ahora, seguramente es solo el cansancio y el momento hablando.\"", pts: -1,
+          error: "Se minimizó una posible señal de riesgo, atribuyéndola solo al cansancio, en lugar de explorarla.", next: "riesgo_omitido" },
         { text: "Decirle: \"Puedes contarme todo, te prometo que absolutamente nada de esto va a salir de aquí.\"", pts: 3,
           error: "Se prometió confidencialidad absoluta sin considerar que, si hay riesgo para su vida, esa confidencialidad tiene límites.", next: "riesgo_explorado" }
       ]
@@ -437,8 +508,8 @@ function buildScenes(c){
       category: "recursos",
       options: [
         { text: fill("Ayudar a {{NOMBRE}} a contactar a un familiar o persona de confianza, y coordinar con el personal presente para que sea evaluado médicamente.", c), pts: 10 },
-        { text: "Decirle que tú te vas a encargar personalmente de resolver todo lo que necesite.", pts: 2,
-          error: "Se asumió un compromiso de resolver todo, fomentando dependencia en lugar de activar su propia red de apoyo." },
+        { text: "Decirle que no se preocupe, que tú te vas a quedar coordinando personalmente todo lo que necesite hasta que esté resuelto.", pts: 2,
+          error: "Se asumió un compromiso de resolver todo personalmente, fomentando dependencia en lugar de activar su propia red de apoyo." },
         { text: "Alejarte un momento para buscar ayuda sin decirle nada ni asegurarte de que quede acompañado.", pts: 0,
           error: "Se dejó sola, sin acompañamiento, a una persona en una situación de vulnerabilidad." },
         { text: "Sugerirle que hable de lo ocurrido con todas las personas presentes en el lugar para \"desahogarse\" en grupo.", pts: 1,
@@ -467,8 +538,8 @@ function buildScenes(c){
       category: "intervencion",
       options: [
         { text: fill("Explicarle con claridad qué puede pasar a continuación, entregarle información de contacto de servicios de apoyo psicológico, y asegurarte de que quede {{ACOMPANADO}} por alguien de confianza antes de retirarte.", c), pts: 15 },
-        { text: "Despedirte diciéndole rápidamente que todo va a estar bien.", pts: 4,
-          error: "El cierre incluyó una falsa garantía y no aseguró acompañamiento posterior." },
+        { text: "Despedirte asegurándole con firmeza que, con el tiempo, todo esto va a quedar atrás y todo va a estar bien.", pts: 4,
+          error: "El cierre incluyó una garantía sobre el futuro que no se puede prometer, y no aseguró acompañamiento posterior." },
         { text: "Quedarte con él/ella de forma indefinida, evitando derivarlo a nadie más y tratando de resolver tú mismo/a toda la situación.", pts: 3,
           error: "No se reconocieron los límites propios de los PAP frente a una necesidad de apoyo continuado." },
         { text: "Entregarle solo un número de teléfono de contacto, sin explicar nada más ni verificar que tenga compañía.", pts: 6 }
@@ -510,7 +581,7 @@ function freshState(){
   };
 }
 
-const teacherState = { openSession: null, sessions: [] };
+const teacherState = { openSession: null, sessions: [], subView: "sessions", caseOverrides: {}, editingCaseId: null };
 let activeTab = "sim";
 
 /* ============================================================
@@ -535,11 +606,88 @@ function requestTeacherAccess(onSuccess){
   }
 }
 
-function pickCase(choiceId){
-  if(choiceId === "aleatorio"){
-    return CASES[Math.floor(Math.random() * CASES.length)];
+/* ============================================================
+   CASOS EFECTIVOS (incorporados + personalizados por el docente)
+   Los casos base viven en el código (CASES). El docente puede,
+   desde Modo docente, agregar casos nuevos, editar los existentes
+   u ocultarlos — esos cambios se guardan en Netlify Blobs a través
+   de la función /cases y se combinan aquí con los casos base.
+   ============================================================ */
+
+let EFFECTIVE_CASES = CASES.slice();
+
+async function refreshEffectiveCases(){
+  let overrides = {};
+  try{
+    const res = await fetch("/.netlify/functions/cases");
+    if(res.ok){
+      const data = await res.json();
+      (data.cases || []).forEach(c => { overrides[c.id] = c; });
+    }
+  } catch(e){ /* si falla, seguimos solo con los casos base */ }
+
+  const merged = CASES
+    .filter(c => !(overrides[c.id] && overrides[c.id].hidden))
+    .map(c => (overrides[c.id] && !overrides[c.id].hidden) ? Object.assign({}, c, overrides[c.id]) : c);
+
+  Object.keys(overrides).forEach(id => {
+    const c = overrides[id];
+    if(!c.hidden && !CASES.find(bc => bc.id === id)) merged.push(c);
+  });
+
+  EFFECTIVE_CASES = merged.length ? merged : CASES.slice();
+  teacherState.caseOverrides = overrides;
+  return EFFECTIVE_CASES;
+}
+
+function slugify(text){
+  return (text || "caso")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40) || "caso";
+}
+
+async function saveCaseToServer(caseObj){
+  try{
+    const res = await fetch("/.netlify/functions/cases", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(caseObj)
+    });
+    if(!res.ok){
+      const err = await res.json().catch(() => ({}));
+      window.alert("No se pudo guardar el caso: " + (err.error || res.status));
+      return false;
+    }
+    return true;
+  } catch(e){
+    window.alert("No se pudo guardar el caso: " + e.message);
+    return false;
   }
-  return CASES.find(c => c.id === choiceId) || CASES[0];
+}
+
+async function deleteCaseFromServer(id){
+  try{
+    const res = await fetch("/.netlify/functions/cases", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    return res.ok;
+  } catch(e){
+    window.alert("No se pudo completar la acción: " + e.message);
+    return false;
+  }
+}
+
+function pickCase(choiceId){
+  const pool = EFFECTIVE_CASES.length ? EFFECTIVE_CASES : CASES;
+  if(choiceId === "aleatorio"){
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  return pool.find(c => c.id === choiceId) || pool[0];
 }
 
 /* ============================================================
@@ -664,11 +812,27 @@ function render(){
   if(!state || state.view === "intro"){
     app.appendChild(renderIntro());
   } else if(state.view === "sim"){
+    app.appendChild(renderCaseBanner());
     app.appendChild(renderPhaseTrack());
     app.appendChild(renderScene());
   } else if(state.view === "report"){
+    app.appendChild(renderCaseBanner());
     app.appendChild(renderReport());
   }
+}
+
+function renderCaseBanner(){
+  const wrap = document.createElement("div");
+  wrap.className = "case-banner";
+  wrap.innerHTML = `
+    <div class="case-icon">${caseIcon(currentCase.id)}</div>
+    <div>
+      <span class="case-banner-tag">${escapeHtml(currentCase.tag || "Caso")} · ${escapeHtml(currentCase.nombre)}, ${escapeHtml(String(currentCase.edad))} años</span>
+      <div class="case-banner-title">${escapeHtml(currentCase.tituloCorto)}</div>
+      <div class="case-banner-desc">${escapeHtml(currentCase.descripcion)}</div>
+    </div>
+  `;
+  return wrap;
 }
 
 function renderHeader(){
@@ -716,12 +880,13 @@ function renderIntro(){
     <label class="field-label">Caso de la simulación</label>
     <div class="case-picker" id="casePicker">
   `;
-  const opts = [{ id: "aleatorio", tituloCorto: "Caso aleatorio", descripcion: "El simulador elige un caso distinto cada vez que inicias o reinicias la simulación." }, ...CASES];
+  const opts = [{ id: "aleatorio", tituloCorto: "Caso aleatorio", descripcion: "El simulador elige un caso distinto cada vez que inicias o reinicias la simulación." }, ...EFFECTIVE_CASES];
   opts.forEach(o => {
     const selected = state.caseChoice === o.id;
     html += `
       <label class="case-option ${selected ? "selected" : ""}" data-case-id="${o.id}">
         <input type="radio" name="caseChoice" value="${o.id}" ${selected ? "checked" : ""}>
+        <div class="case-icon">${o.id === "aleatorio" ? CASE_ICONS.generico : caseIcon(o.id)}</div>
         <div>
           <div class="case-title">${o.tag ? o.tag + " — " : ""}${o.tituloCorto}</div>
           <div class="case-desc">${o.descripcion}</div>
@@ -1024,8 +1189,177 @@ function escapeHtml(str){
 function renderTeacherMode(){
   const wrap = document.createElement("div");
   wrap.className = "panel";
-  wrap.innerHTML = `<span class="scene-label">Modo docente</span><p class="narrative" style="font-size:14.5px;">Registro de simulaciones completadas por estudiantes (almacenamiento compartido).</p>`;
+  wrap.innerHTML = `<span class="scene-label">Modo docente</span><p class="narrative" style="font-size:14.5px;">Registro de simulaciones completadas y administración de los casos disponibles.</p>`;
 
+  const subtabs = document.createElement("div");
+  subtabs.className = "teacher-subtabs";
+  subtabs.innerHTML = `
+    <div class="teacher-subtab ${teacherState.subView==='sessions'?'active':''}" data-sub="sessions">Sesiones registradas</div>
+    <div class="teacher-subtab ${teacherState.subView==='cases'?'active':''}" data-sub="cases">Editor de casos</div>
+  `;
+  subtabs.querySelectorAll(".teacher-subtab").forEach(t => t.addEventListener("click", () => {
+    teacherState.subView = t.dataset.sub;
+    render();
+  }));
+  wrap.appendChild(subtabs);
+
+  if(teacherState.subView === "cases"){
+    wrap.appendChild(renderCaseEditor());
+    return wrap;
+  }
+
+  wrap.appendChild(renderSessionsList());
+  return wrap;
+}
+
+const CASE_FORM_FIELDS = [
+  { key: "tag", label: "Etiqueta (ej. Caso D)", type: "text" },
+  { key: "tituloCorto", label: "Título corto", type: "text" },
+  { key: "descripcion", label: "Descripción (aparece en el selector)", type: "textarea", full: true },
+  { key: "nombre", label: "Nombre de la persona", type: "text" },
+  { key: "edad", label: "Edad", type: "text" },
+  { key: "persona", label: "\"la persona\" (ej. la joven / el joven)", type: "text" },
+  { key: "personaCap", label: "Con mayúscula (ej. La joven)", type: "text" },
+  { key: "pron", label: "Pronombre (ella / él)", type: "text" },
+  { key: "acompanado", label: "Acompañado/a", type: "text" },
+  { key: "herido", label: "Herido/a", type: "text" },
+  { key: "llegada", label: "Escena 1 · Descripción de la llegada al lugar", type: "textarea", full: true },
+  { key: "aperturaLine", label: "Frase de apertura de la persona (entre comillas)", type: "textarea", full: true },
+  { key: "estadoInicial", label: "Estado inicial (ej. \"llorando de forma intermitente...\")", type: "textarea", full: true },
+  { key: "necesidadesNarrative", label: "Narrativa de necesidades inmediatas (usa {{NOMBRE}})", type: "textarea", full: true },
+  { key: "senalRiesgoLine", label: "Frase de señal de riesgo (entre comillas)", type: "textarea", full: true },
+  { key: "riesgoExploradoNarrative", label: "Narrativa si se explora el riesgo (usa {{NOMBRE}})", type: "textarea", full: true },
+  { key: "riesgoOmitidoNarrative", label: "Narrativa si NO se explora el riesgo (usa {{NOMBRE}})", type: "textarea", full: true }
+];
+
+function renderCaseEditor(){
+  const frag = document.createElement("div");
+  frag.style.marginTop = "18px";
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "btn-secondary";
+  addBtn.textContent = "+ Agregar caso nuevo";
+  addBtn.style.marginBottom = "16px";
+  addBtn.addEventListener("click", () => { teacherState.editingCaseId = "NEW"; render(); });
+  frag.appendChild(addBtn);
+
+  EFFECTIVE_CASES.forEach(c => {
+    const isBuiltIn = !!CASES.find(bc => bc.id === c.id);
+    const row = document.createElement("div");
+    row.className = "case-admin-row";
+    row.innerHTML = `
+      <div>
+        <div class="case-admin-title">${escapeHtml(c.tag ? c.tag + " — " : "")}${escapeHtml(c.tituloCorto)}</div>
+        <div class="case-admin-desc">${escapeHtml(c.descripcion)}</div>
+      </div>
+      <div class="case-admin-actions">
+        <button class="btn-mini" data-act="edit">Editar</button>
+        <button class="btn-mini danger" data-act="remove">${isBuiltIn ? "Ocultar" : "Borrar"}</button>
+      </div>
+    `;
+    row.querySelector('[data-act="edit"]').addEventListener("click", () => {
+      teacherState.editingCaseId = c.id;
+      render();
+    });
+    row.querySelector('[data-act="remove"]').addEventListener("click", async () => {
+      const msg = isBuiltIn ? "¿Ocultar este caso del selector de simulación? Podrás restaurarlo después." : "¿Borrar definitivamente este caso? Esta acción no se puede deshacer.";
+      if(!window.confirm(msg)) return;
+      const ok = isBuiltIn ? await saveCaseToServer(Object.assign({}, c, { hidden: true })) : await deleteCaseFromServer(c.id);
+      if(ok){ await refreshEffectiveCases(); render(); }
+    });
+    frag.appendChild(row);
+  });
+
+  Object.values(teacherState.caseOverrides || {}).filter(o => o.hidden).forEach(o => {
+    const builtIn = CASES.find(bc => bc.id === o.id);
+    if(!builtIn) return;
+    const row = document.createElement("div");
+    row.className = "case-admin-row is-hidden";
+    row.innerHTML = `
+      <div>
+        <div class="case-admin-title">${escapeHtml(builtIn.tag ? builtIn.tag + " — " : "")}${escapeHtml(builtIn.tituloCorto)} (oculto)</div>
+        <div class="case-admin-desc">${escapeHtml(builtIn.descripcion)}</div>
+      </div>
+      <div class="case-admin-actions">
+        <button class="btn-mini warn" data-act="restore">Restaurar</button>
+      </div>
+    `;
+    row.querySelector('[data-act="restore"]').addEventListener("click", async () => {
+      const ok = await deleteCaseFromServer(o.id);
+      if(ok){ await refreshEffectiveCases(); render(); }
+    });
+    frag.appendChild(row);
+  });
+
+  if(teacherState.editingCaseId){
+    frag.appendChild(buildCaseForm(teacherState.editingCaseId));
+  }
+
+  return frag;
+}
+
+function buildCaseForm(editingId){
+  const isNew = editingId === "NEW";
+  const existing = isNew ? null : EFFECTIVE_CASES.find(c => c.id === editingId);
+  const data = existing ? Object.assign({}, existing) : {
+    tag: "", tituloCorto: "", descripcion: "", nombre: "", edad: "",
+    persona: "la persona", personaCap: "La persona", pron: "ella",
+    acompanado: "acompañada", herido: "herida",
+    llegada: "", aperturaLine: "", estadoInicial: "",
+    necesidadesNarrative: "", senalRiesgoLine: "", riesgoExploradoNarrative: "", riesgoOmitidoNarrative: ""
+  };
+
+  const form = document.createElement("div");
+  form.className = "case-form";
+  form.innerHTML = `<h3 style="font-family:var(--sans); font-size:13px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); margin:0 0 12px;">${isNew ? "Nuevo caso" : "Editar caso"}</h3>
+    <div class="form-grid">
+      ${CASE_FORM_FIELDS.map(f => `
+        <div class="${f.full ? "full" : ""}">
+          <label>${f.label}</label>
+          ${f.type === "textarea"
+            ? `<textarea data-field="${f.key}">${escapeHtml(data[f.key] || "")}</textarea>`
+            : `<input type="text" data-field="${f.key}" value="${escapeHtml(String(data[f.key] || ""))}">`}
+        </div>
+      `).join("")}
+    </div>
+    <div class="case-form-actions">
+      <button class="btn-primary" id="saveCaseBtn">Guardar caso</button>
+      <button class="btn-secondary" id="cancelCaseBtn">Cancelar</button>
+    </div>
+  `;
+
+  form.querySelector("#cancelCaseBtn").addEventListener("click", () => {
+    teacherState.editingCaseId = null;
+    render();
+  });
+
+  form.querySelector("#saveCaseBtn").addEventListener("click", async () => {
+    const values = {};
+    CASE_FORM_FIELDS.forEach(f => {
+      values[f.key] = form.querySelector(`[data-field="${f.key}"]`).value.trim();
+    });
+    if(!values.tituloCorto || !values.nombre || !values.edad){
+      window.alert("Completa al menos: título corto, nombre y edad.");
+      return;
+    }
+    values.edad = Number(values.edad) || values.edad;
+    values.id = isNew ? `custom_${slugify(values.tituloCorto)}_${Date.now().toString(36)}` : editingId;
+
+    const btn = form.querySelector("#saveCaseBtn");
+    btn.disabled = true; btn.textContent = "Guardando...";
+    const ok = await saveCaseToServer(values);
+    btn.disabled = false; btn.textContent = "Guardar caso";
+    if(ok){
+      teacherState.editingCaseId = null;
+      await refreshEffectiveCases();
+      render();
+    }
+  });
+
+  return form;
+}
+
+function renderSessionsList(){
   const list = document.createElement("div");
   list.style.marginTop = "18px";
 
@@ -1059,8 +1393,7 @@ function renderTeacherMode(){
     });
   }
 
-  wrap.appendChild(list);
-  return wrap;
+  return list;
 }
 
 function buildTeacherDetail(s){
@@ -1099,6 +1432,9 @@ function buildTeacherDetail(s){
    ============================================================ */
 
 render();
+refreshEffectiveCases().then(() => {
+  if(!state || state.view === "intro") render();
+});
 
 })();
 </script>
