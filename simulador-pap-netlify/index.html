@@ -810,6 +810,20 @@ async function saveSession(){
   } catch(e){ /* almacenamiento no disponible; el reporte sigue visible en pantalla */ }
 }
 
+async function deleteSessionFromServer(key){
+  try{
+    const res = await fetch("/.netlify/functions/sessions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key })
+    });
+    return res.ok;
+  } catch(e){
+    window.alert("No se pudo borrar la sesión: " + e.message);
+    return false;
+  }
+}
+
 async function loadSessions(){
   try{
     const response = await fetch("/.netlify/functions/sessions");
@@ -1453,11 +1467,20 @@ function renderSessionsList(){
       const level = performanceLevel(s.total);
       row.innerHTML = `
         <div class="session-row-head">
-          <span class="name">${escapeHtml(s.studentName)}</span>
-          <span class="meta">${escapeHtml(s.caseTag || "")} ${escapeHtml(s.caseTitle || "")} · ${new Date(s.startTime).toLocaleString("es-CO")} · ${Math.round(s.total)}/100 · ${level.label}</span>
+          <div>
+            <span class="name">${escapeHtml(s.studentName)}</span>
+            <span class="meta">${escapeHtml(s.caseTag || "")} ${escapeHtml(s.caseTitle || "")} · ${new Date(s.startTime).toLocaleString("es-CO")} · ${Math.round(s.total)}/100 · ${level.label}</span>
+          </div>
+          <button class="btn-mini danger" data-act="delete-session" type="button">Borrar</button>
         </div>
         <div class="session-detail" id="detail-${idx}"></div>
       `;
+      row.querySelector('[data-act="delete-session"]').addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        if(!window.confirm(`¿Borrar definitivamente la sesión de ${s.studentName}? Esta acción no se puede deshacer.`)) return;
+        const ok = await deleteSessionFromServer(s.key);
+        if(ok){ await loadSessions(); render(); }
+      });
       row.addEventListener("click", () => {
         const detail = row.querySelector(".session-detail");
         const isOpen = detail.classList.contains("open");
