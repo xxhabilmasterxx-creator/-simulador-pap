@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador PAP · Primeros Auxilios Psicológicos</title>
+<title>Simulador de Entrevista Psicológica · Primer acercamiento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -281,73 +281,75 @@
 (function(){
 
 /* ============================================================
-   BANCO DE CASOS
-   Cada caso define su propio contexto (evento, protagonista) y
-   se combina con una plantilla común de escenas basada en el
-   modelo Mirar–Escuchar–Conectar (PAP / OMS). Esto permite que
-   el simulador presente un caso distinto en cada inicio o
-   reinicio, evitando que el estudiante memorice un único guion.
+   BANCO DE CASOS (PACIENTES/CONSULTANTES)
+   Cada caso define un consultante distinto (motivo de consulta,
+   contexto) y se combina con una plantilla común de escenas que
+   recorre una primera entrevista clínica: encuadre, apertura,
+   exploración del motivo de consulta e historia, exploración de
+   riesgo, contexto de apoyo, y cierre. Esto permite que el
+   simulador presente un caso distinto en cada inicio o reinicio,
+   evitando que el estudiante memorice un único guion.
    ============================================================ */
 
 /* Íconos SVG en línea (no dependen de imágenes externas ni de internet)
    usados en el selector de casos y en el banner permanente durante la
    simulación, para ayudar a identificar visualmente cada caso. */
 const CASE_ICONS = {
-  accidente_transito: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"/><rect x="3" y="13" width="18" height="5" rx="1.2"/><circle cx="7.5" cy="18.5" r="1.4"/><circle cx="16.5" cy="18.5" r="1.4"/><path d="M12 2v3M12 2l-2 2M12 2l2 2"/></svg>`,
-  sismo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-5 8 5v12"/><path d="M4 21h16"/><path d="M9 21v-6h2l-1 3h2l-1 3"/><path d="M9 12h2l-1-2h2"/></svg>`,
-  perdida_subita: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4.2 2.2M12 21s7-4.35 9.5-9c1.5-3.5 0-7-3.5-7-1.7 0-3.1.8-3.9 1.8"/><path d="M8 12h2l1.2-2.4L12.8 14 14 12h2"/></svg>`,
+  ansiedad_academica: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M8 9h8M8 13h5"/><path d="M14 19v-4a1 1 0 0 1 1-1h2"/></svg>`,
+  animo_bajo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 15.5c1-1.2 2.2-1.8 3.5-1.8s2.5.6 3.5 1.8"/><path d="M9 10h.01M15 10h.01"/></svg>`,
+  consulta_familiar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="16" cy="8" r="2"/><path d="M2.5 20c0-3.3 2.6-5.5 6-5.5s6 2.2 6 5.5"/><path d="M14.3 15c2.5.4 3.7 2.2 3.7 5"/></svg>`,
   generico: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/><path d="M19 3l1.3 1.3M20.3 3L19 4.3"/></svg>`
 };
 function caseIcon(id){ return CASE_ICONS[id] || CASE_ICONS.generico; }
 
 const CASES = [
   {
-    id: "accidente_transito",
+    id: "ansiedad_academica",
     tag: "Caso A",
-    tituloCorto: "Testigo de un accidente de tránsito",
-    descripcion: "Camila, 21 años, presenció el choque entre el auto en el que iba con una amiga y una motocicleta; su amiga fue trasladada de urgencia y ella quedó sola en la escena.",
+    tituloCorto: "Ansiedad y bajo rendimiento académico",
+    descripcion: "Camila, 21 años, estudiante universitaria, consulta por iniciativa propia luego de varias semanas con dificultad para dormir y ataques de pánico antes de los exámenes.",
     nombre: "Camila", edad: 21,
-    persona: "la joven", personaCap: "La joven", pron: "ella",
-    acompanado: "acompañada", herido: "herida",
-    llegada: "Llegas al lugar pocos minutos después del accidente. Hay dos vehículos involucrados, personal de emergencia comenzando a llegar, algunas personas heridas siendo atendidas, y varias personas alrededor, algunas llorando. El ambiente es caótico y ruidoso. A unos metros, apartada del grupo principal, ves a una joven de aproximadamente 21 años, sentada en el borde de la acera, temblando visiblemente y llorando.",
-    aperturaLine: "\"No sé qué hacer... no puedo dejar de pensar en lo que vi.\"",
-    estadoInicial: "llorando de forma intermitente, con dificultad para organizar sus ideas",
-    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que tiene frío, que no sabe dónde quedó su teléfono, y que una amiga que iba con ella en el auto fue trasladada al hospital hace unos minutos. Nadie le ha revisado si ella misma tiene alguna lesión.",
-    senalRiesgoLine: "\"Desde que vi el auto de mi amiga así... no dejo de pensar que si algo le pasa a ella, ya no tendría sentido seguir esforzándome en nada. A veces siento que ojalá yo tampoco estuviera aquí.\"",
-    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que presenció el accidente, especialmente al pensar en su amiga herida. Se ve agotada y abrumada.",
-    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+    persona: "la consultante", personaCap: "La consultante", pron: "ella",
+    acompanado: "por iniciativa propia", herido: "",
+    llegada: "Revisas la ficha de derivación antes de recibir a la consultante: llega por iniciativa propia, refiere \"ansiedad\" y \"problemas para dormir\" hace unas seis semanas. Es tu primera vez viéndola. La sala de entrevista está lista, con privacidad asegurada. Camila llega puntual, se sienta con los brazos cruzados y mira el suelo con frecuencia mientras esperas a comenzar.",
+    aperturaLine: "\"La verdad no sé muy bien por dónde empezar... llevo semanas sin dormir bien y últimamente me dan como ataques de pánico antes de los parciales.\"",
+    estadoInicial: "con una postura tensa, hablando en voz baja y evitando el contacto visual sostenido",
+    necesidadesNarrative: "Camila ha empezado a describir su malestar en términos generales (\"ansiedad\", \"no puedo dormir\", \"pánico\"), pero aún no has explorado con ella desde cuándo exactamente comenzó, qué tan seguido ocurre, qué lo desencadena, y cómo está afectando su día a día.",
+    senalRiesgoLine: "\"A veces, cuando estoy así de agotada, pienso que sería un alivio simplemente no tener que seguir con todo esto... no es que quiera hacer algo, pero la idea aparece.\"",
+    riesgoExploradoNarrative: "Camila aclara, al preguntarle directamente, que no tiene un plan ni intención de hacerse daño, y que nunca ha intentado algo así antes. Dice que la idea aparece como una forma de \"desconexión\" cuando está muy agotada, más que como un deseo real de morir. No identifica factores protectores de forma espontánea; habría que explorarlos.",
+    riesgoOmitidoNarrative: "La entrevista continúa. Camila no vuelve a mencionar espontáneamente lo que dijo, y esa señal queda sin explorar por el momento."
   },
   {
-    id: "sismo",
+    id: "animo_bajo",
     tag: "Caso B",
-    tituloCorto: "Sobreviviente de un sismo",
-    descripcion: "Andrés, 24 años, quedó atrapado unos minutos bajo un marco de puerta durante el sismo y perdió de vista a su hermano menor en medio de la evacuación del edificio.",
+    tituloCorto: "Ánimo bajo tras el fin de una relación",
+    descripcion: "Andrés, 24 años, fue remitido por su médico general tras consultar por fatiga persistente; en la anamnesis médica reportó tristeza sostenida desde hace dos meses, tras terminar una relación de varios años.",
     nombre: "Andrés", edad: 24,
-    persona: "el joven", personaCap: "El joven", pron: "él",
-    acompanado: "acompañado", herido: "herido",
-    llegada: "Llegas a la zona minutos después de un sismo de fuerte intensidad. Personal de rescate trabaja entre los escombros de un edificio parcialmente colapsado, vecinos ayudan a evacuar a otras personas, y se escuchan sirenas a lo lejos. A un costado, envuelto en una manta térmica, ves a un joven de aproximadamente 24 años, sentado en el suelo, con las manos temblorosas y la mirada fija en el edificio dañado.",
-    aperturaLine: "\"No sé qué hacer... todavía siento que el piso se sigue moviendo.\"",
-    estadoInicial: "con la mirada fija en el edificio, respirando de forma agitada y con dificultad para hilar sus ideas",
-    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que quedó atrapado unos minutos bajo un marco de puerta antes de ser rescatado, que tiene un corte profundo en el brazo que nadie ha revisado, y que su hermano menor, con quien caminaba antes del sismo, se separó de él durante la evacuación y no sabe dónde está.",
-    senalRiesgoLine: "\"Mientras estaba atrapado pensé que ya no iba a salir de ahí... y una parte de mí, sinceramente, no sé si le hubiera importado tanto. No sé si eso está mal de decir.\"",
-    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde el sismo, especialmente al no saber si su hermano está bien. Se ve agotado y abrumado.",
-    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+    persona: "el consultante", personaCap: "El consultante", pron: "él",
+    acompanado: "remitido por su médico general", herido: "",
+    llegada: "Revisas la ficha de derivación: Andrés fue remitido por su médico general, quien descartó causas físicas para su fatiga persistente y sugirió evaluación psicológica al detectar ánimo bajo sostenido. Es la primera vez que consulta a un psicólogo. Entra a la sala con paso lento, se sienta y suspira antes de que alcances a preguntarle nada.",
+    aperturaLine: "\"Honestamente no sé si esto vaya a servir de mucho, pero mi médico insistió... hace como dos meses terminé una relación larga y desde entonces no me siento yo mismo.\"",
+    estadoInicial: "con un tono de voz apagado, movimientos lentos y expresión facial poco variable",
+    necesidadesNarrative: "Andrés ha mencionado el quiebre de su relación como el punto de partida, pero aún no has explorado con él cómo ha afectado esto su sueño, apetito, energía, interés en actividades que antes disfrutaba, ni si esta es la primera vez que atraviesa un episodio así.",
+    senalRiesgoLine: "\"Hay días en que pienso que si simplemente no despertara al otro día, tampoco sería tan grave... no es que esté planeando nada, pero la idea ha estado ahí más de una vez.\"",
+    riesgoExploradoNarrative: "Andrés aclara, al preguntarle directamente, que no tiene un plan ni acceso a medios para hacerse daño, y que no ha tenido intentos previos. Dice que el pensamiento aparece principalmente de noche, cuando se siente más solo. Reconoce que un par de amigos cercanos han estado pendientes de él, aunque no les ha contado la intensidad real de lo que siente.",
+    riesgoOmitidoNarrative: "La entrevista continúa. Andrés no vuelve a mencionar espontáneamente lo que dijo, y esa señal queda sin explorar por el momento."
   },
   {
-    id: "perdida_subita",
+    id: "consulta_familiar",
     tag: "Caso C",
-    tituloCorto: "Notificación de una muerte súbita",
-    descripcion: "Valentina, 22 años, llegó sola a urgencias y acaba de recibir la noticia de que su padre falleció por un paro cardíaco repentino; su familia vive en otra ciudad.",
+    tituloCorto: "Consulta sugerida por la familia",
+    descripcion: "Valentina, 22 años, asiste a la primera cita porque sus padres insistieron, tras notar que se ha aislado y ha dejado de salir con amigos en los últimos meses; ella se muestra reservada sobre si realmente quiere estar ahí.",
     nombre: "Valentina", edad: 22,
-    persona: "la joven", personaCap: "La joven", pron: "ella",
-    acompanado: "acompañada", herido: "herida",
-    llegada: "Llegas a la sala de espera de urgencias de un hospital. Hace unos minutos, el personal médico informó a una familia que uno de sus integrantes falleció de forma repentina por un paro cardíaco. Hay llanto y confusión en el lugar. A un costado, apartada del resto de su familia, ves a una joven de aproximadamente 22 años, de pie junto a una pared, con la mirada perdida y una respiración muy agitada.",
-    aperturaLine: "\"No puedo creerlo... no entiendo cómo pasó esto tan rápido.\"",
-    estadoInicial: "con la mirada perdida, la respiración entrecortada y dificultad para mantenerse de pie con estabilidad",
-    necesidadesNarrative: "{{NOMBRE}} menciona, entre pausas, que llegó sola al hospital porque el resto de su familia vive en otra ciudad, que no ha comido nada desde la mañana, y que no sabe a quién avisar primero ni qué trámites debe realizar. Nadie le ha ofrecido agua ni un lugar donde sentarse con calma.",
-    senalRiesgoLine: "\"Mi papá era con quien yo resolvía todo... no sé cómo se supone que siga sola con esto. Hay un momento en que uno piensa que sería más fácil simplemente no tener que enfrentar nada de esto.\"",
-    riesgoExploradoNarrative: "{{NOMBRE}} responde que no tiene un plan ni intención de hacerse daño en este momento, pero reconoce que ha tenido pensamientos pasivos de \"no querer seguir\" desde que recibió la noticia, especialmente al pensar en enfrentar sola los días siguientes. Se ve agotada y abrumada.",
-    riesgoOmitidoNarrative: "La conversación continúa. {{NOMBRE}} no vuelve a mencionar espontáneamente lo que dijo antes, aunque su expresión sigue siendo de agotamiento y tristeza profunda."
+    persona: "la consultante", personaCap: "La consultante", pron: "ella",
+    acompanado: "traída por presión familiar", herido: "",
+    llegada: "Revisas la ficha de derivación: los padres de Valentina agendaron la cita, preocupados porque ella \"se ha encerrado\" y \"ya no sale con nadie\" desde hace meses. Valentina no solicitó la consulta por sí misma. Entra a la sala, se sienta con los brazos cruzados, y antes de que digas nada comenta con tono cortante que \"esto fue idea de mis papás, no mía\".",
+    aperturaLine: "\"No sé bien qué se supone que tengo que decir aquí. Mis papás son los que están preocupados, yo estoy bien.\"",
+    estadoInicial: "con actitud reservada, respuestas breves y una postura defensiva",
+    necesidadesNarrative: "Valentina minimiza que haya un problema, pero aún no has explorado con ella, desde su propia perspectiva, qué ha cambiado en los últimos meses, cómo se siente ella respecto a haber dejado de salir, y si hay algo —aunque sea distinto a la preocupación de sus padres— que a ella sí le gustaría conversar.",
+    senalRiesgoLine: "\"Si te soy sincera, a veces sí pienso que todo sería más simple si yo no estuviera en el medio de tantos problemas... pero no es que esté planeando nada raro, ¿ya?\"",
+    riesgoExploradoNarrative: "Valentina, al preguntarle directamente y con calma, aclara que no tiene un plan ni intención de hacerse daño, aunque reconoce que se ha sentido \"de más\" en su familia últimamente. Se muestra un poco menos defensiva después de que se le pregunta esto sin juicio. No ha hablado de esto con nadie más.",
+    riesgoOmitidoNarrative: "La entrevista continúa. Valentina no vuelve a mencionar espontáneamente lo que dijo, y esa señal queda sin explorar por el momento, mientras mantiene su actitud reservada."
   }
 ];
 
@@ -356,12 +358,12 @@ const MAX_SCORES = {
   intervencion: 15, recursos: 10, derivacion: 10, etica: 5
 };
 const CATEGORY_LABELS = {
-  seguridad: "Seguridad y evaluación inicial",
-  comunicacion: "Comunicación y empatía",
-  necesidades: "Identificación de necesidades",
-  intervencion: "Intervención y estabilización",
-  recursos: "Activación de recursos y red de apoyo",
-  derivacion: "Derivación y límites profesionales",
+  seguridad: "Encuadre, límites y manejo de riesgo",
+  comunicacion: "Rapport y habilidades de entrevista",
+  necesidades: "Exploración clínica (motivo e historia)",
+  intervencion: "Devolución y cierre de la entrevista",
+  recursos: "Exploración del contexto y red de apoyo",
+  derivacion: "Derivación y continuidad del proceso",
   etica: "Ética profesional"
 };
 
@@ -383,132 +385,133 @@ function buildScenes(c){
   return {
     llegada: {
       phase: "mirar",
-      label: "Escena 1 · Llegada al lugar",
+      label: "Escena 1 · Antes de recibir al consultante",
       narrative: c.llegada,
       type: "choice",
       category: "seguridad",
       options: [
-        { text: fill("Acercarte de inmediato a {{PERSONA}} y preguntarle qué pasó.", c), pts: 3,
-          error: "No se realizó una evaluación de la escena antes de intervenir." },
-        { text: "Detenerte brevemente a observar la escena: identificar riesgos físicos, personal de emergencia presente y posibles peligros antes de acercarte.", pts: 8 },
-        { text: "Comenzar a tomar notas clínicas sobre lo que observas antes de acercarte a nadie.", pts: 1,
-          error: "El foco inicial se desplazó hacia el registro en vez de la seguridad y la persona." },
-        { text: fill("Buscar primero a un familiar o conocido de {{PERSONA}} antes de acercarte a {{PRON}}.", c), pts: 4 }
+        { text: fill("Entrar a buscar a {{PERSONA}} de inmediato y empezar a preguntarle qué le pasa, sin revisar antes la información de derivación.", c), pts: 3,
+          error: "No se revisó la información disponible antes del primer contacto, lo que puede llevar a preguntas redundantes o mal orientadas." },
+        { text: "Revisar brevemente el motivo de derivación, confirmar que el espacio garantice privacidad, y prepararte para recibir a la persona sin asumir un diagnóstico a partir de lo poco que sabes.", pts: 8 },
+        { text: "A partir del motivo de derivación, anticipar mentalmente un diagnóstico probable antes de conocer a la persona.", pts: 1,
+          error: "Se formuló una hipótesis diagnóstica prematura, antes de tener información directa del consultante." },
+        { text: fill("Revisar la ficha de derivación y preparar de antemano una lista fija de preguntas cerradas para hacerle a {{PERSONA}} en orden.", c), pts: 4,
+          error: "Prepararse es adecuado, pero una lista rígida de preguntas cerradas limita la flexibilidad necesaria en una primera entrevista." }
       ],
       next: "acercamiento"
     },
 
     acercamiento: {
       phase: "mirar",
-      label: "Escena 2 · Primer acercamiento",
-      narrative: fill("Decides acercarte a {{PERSONA}}. Está {{PRON}} sola, con la mirada perdida, respirando de forma agitada. Nadie más se ha acercado a hablar con {{PRON}} todavía.", c),
+      label: "Escena 2 · Saludo y presentación",
+      narrative: fill("{{PERSONA_CAP}} entra a la sala. Es la primera vez que se ven. {{PRON_CAP}} se sienta frente a ti, con una postura algo rígida, esperando a que comiences.", c).replace("{{PRON_CAP}}", c.pron === "ella" ? "Ella" : "Él"),
       type: "choice",
       category: "comunicacion",
       options: [
-        { text: "Acercarte lentamente, mantener una distancia prudente y presentarte: \"Hola, soy [tu nombre], soy estudiante de psicología y estoy aquí para acompañarte, ¿está bien si converso contigo un momento?\"", pts: 6 },
-        { text: "Acercarte, ponerle la mano en el hombro y decirle: \"Entiendo que esto es muy fuerte, pero necesito que respires y te calmes un poco para poder ayudarte mejor.\"", pts: -2,
-          error: "Se le pidió a la persona que se calme, lo que invalida su reacción emocional en lugar de acompañarla." },
-        { text: "Preguntar directamente: \"¿Puedes contarme exactamente qué pasó?\"", pts: 0,
-          error: "Se presionó a la persona para relatar el evento traumático de forma prematura." },
-        { text: "Quedarte cerca en silencio, esperando que hable primero, sin presentarte.", pts: 2,
-          error: "No hubo presentación ni identificación profesional." }
+        { text: "Saludarla, presentarte con tu nombre y rol, explicar brevemente en qué consiste esta primera entrevista y su carácter confidencial (con sus límites), y preguntar si tiene alguna duda antes de comenzar.", pts: 6 },
+        { text: "Saludar rápidamente y preguntar de inmediato: \"Cuénteme, ¿qué problema tiene?\"", pts: 0,
+          error: "Se omitió el encuadre inicial (presentación, explicación del proceso y de la confidencialidad) antes de entrar en materia." },
+        { text: "Presentarte y, sin preguntar, comenzar a explicar en detalle cómo vas a evaluarla y qué pruebas psicológicas le vas a aplicar en esta sesión.", pts: 1,
+          error: "Se antepuso un plan de evaluación estructurado sin haber escuchado aún el motivo de consulta de la persona." },
+        { text: "Saludar de forma breve y quedarte en silencio esperando que hable primero, sin explicar el encuadre de la entrevista.", pts: 2,
+          error: "No se ofreció ningún encuadre inicial sobre el proceso, lo que puede generar incertidumbre en el consultante." }
       ],
       next: "apertura_empatica"
     },
 
     apertura_empatica: {
       phase: "escuchar",
-      label: "Escena 3 · Apertura del contacto",
-      narrative: fill("{{PERSONA_CAP}} te mira y dice, con la voz entrecortada:", c),
+      label: "Escena 3 · Apertura: motivo de consulta",
+      narrative: fill("Con el encuadre ya explicado, le preguntas qué la trae a consulta. {{PERSONA_CAP}} responde:", c),
       characterLine: c.aperturaLine,
       type: "free",
       category: "comunicacion",
       maxPts: 8,
-      prompt: "¿Qué le dirías en este momento?",
-      evalContext: "El estudiante debe abrir el contacto de forma empática tras la primera revelación emocional de la persona en crisis, sin presionarla a relatar el evento, validando su malestar y dejando espacio para que decida cuánto compartir.",
+      prompt: "¿Qué le dirías o preguntarías a continuación?",
+      evalContext: "El estudiante debe responder a la apertura del motivo de consulta con una pregunta o intervención abierta que invite a la persona a ampliar su relato con sus propias palabras (ej. \"cuénteme más sobre eso\"), sin cerrar la exploración con preguntas de sí/no, sin interpretar prematuramente, y validando que se sienta escuchada.",
       next: "escucha_inicial"
     },
 
     escucha_inicial: {
       phase: "escuchar",
-      label: "Escena 4 · Escucha activa",
-      narrative: fill("{{PERSONA_CAP}} sigue " + c.estadoInicial + ".", c),
+      label: "Escena 4 · Escucha activa y validación",
+      narrative: fill("{{PERSONA_CAP}} continúa hablando, " + c.estadoInicial + ".", c),
       type: "choice",
       category: "comunicacion",
       options: [
-        { text: "\"Es comprensible sentirte así después de algo tan impactante. Estoy aquí contigo.\"", pts: 6 },
-        { text: "\"Quédate tranquila, la gran mayoría de las personas se recupera bien de este tipo de situaciones con el paso del tiempo.\"", pts: -1,
-          error: "Se dio una garantía general sobre el resultado, en lugar de acompañar el malestar presente." },
-        { text: "\"¿Puedes describirme exactamente la secuencia de lo que ocurrió, paso a paso?\"", pts: 0,
-          error: "Se insistió en obtener el relato detallado del evento traumático." },
-        { text: "Preguntarle su nombre y cómo se siente en este momento, sin pedirle detalles de lo ocurrido.", pts: 5 }
+        { text: "Reflejar lo escuchado con tus propias palabras y validar el malestar: \"Por lo que me cuenta, ha sido un período difícil de sobrellevar. Cuénteme un poco más sobre cómo ha sido esto para usted.\"", pts: 6 },
+        { text: "\"Eso le pasa a mucha gente, no se preocupe, seguro se le va a pasar pronto.\"", pts: -1,
+          error: "Se dio una generalización que minimiza la experiencia particular de la persona en lugar de explorarla." },
+        { text: "\"¿Duerme usted más de 6 horas cada noche, sí o no?\"", pts: 0,
+          error: "Se pasó directamente a una pregunta cerrada muy específica, sin haber explorado primero el relato general de la persona." },
+        { text: "Preguntar de forma abierta desde cuándo nota estos cambios y qué fue lo primero que notó diferente.", pts: 5 }
       ],
       next: "necesidad_info"
     },
 
     necesidad_info: {
       phase: "escuchar",
-      label: "Escena 5 · Identificación de necesidades",
-      narrative: fill("Se ha logrado un contacto inicial. {{PERSONA_CAP}} —dice llamarse {{NOMBRE}}— sigue visiblemente afectado{{HERIDO_SUFIJO}}, pero ya puede sostener una conversación breve contigo.", c).replace("{{HERIDO_SUFIJO}}", ""),
+      label: "Escena 5 · Planificando la exploración",
+      narrative: fill("Se ha logrado un buen contacto inicial. {{PERSONA_CAP}} —{{NOMBRE}}— ha comenzado a describir su malestar en términos generales.", c),
       type: "free",
       category: "necesidades",
       maxPts: 10,
-      prompt: "¿Qué información necesitas conocer en este momento para orientar tu intervención?",
-      evalContext: "El estudiante debe identificar qué necesita explorar en esta etapa de los PAP: estado emocional actual, seguridad física/necesidad de atención médica, red de apoyo disponible, personas significativas presentes o ausentes, y posibles factores de riesgo — sin necesidad de indagar en el relato del evento traumático en sí.",
+      prompt: "¿Qué áreas necesitas explorar en el resto de esta primera entrevista?",
+      evalContext: "El estudiante debe identificar las áreas clave a explorar en una primera entrevista clínica: inicio, duración, curso y desencadenantes del malestar; impacto en el funcionamiento diario (sueño, apetito, estudio/trabajo, relaciones); antecedentes de episodios similares; red de apoyo disponible; y posibles factores de riesgo — sin necesidad de cerrar aún un diagnóstico.",
       next: "necesidades_inmediatas"
     },
 
     necesidades_inmediatas: {
       phase: "escuchar",
-      label: "Escena 6 · Necesidades inmediatas",
+      label: "Escena 6 · Explorando la historia del problema",
       narrative: fill(c.necesidadesNarrative, c),
       type: "choice",
       category: "necesidades",
       options: [
-        { text: fill("Preguntarle si está {{HERIDO}} o si ha sido revisado por personal médico, y gestionar que lo revisen si no lo ha sido.", c), pts: 5 },
-        { text: "Preguntarle si hay algún familiar o persona de confianza a quien pueda llamar en este momento.", pts: 5 },
-        { text: "Comenzar a aplicar un ejercicio prolongado de respiración diafragmática con conteo, como en un protocolo clínico estructurado.", pts: -1,
-          error: "Se utilizó una técnica estructurada de intervención psicoterapéutica que excede el alcance de los PAP." },
-        { text: "Decirle que con el tiempo va a poder ver este momento desde otra perspectiva y que esto lo va a hacer una persona más fuerte.", pts: -1,
-          error: "Se ofreció un consejo personal/filosófico prematuro en lugar de una respuesta centrada en sus necesidades actuales." }
+        { text: fill("Preguntarle de forma abierta cómo ha sido su día a día desde que comenzó esto: cómo ha afectado su sueño, su energía y sus actividades habituales.", c), pts: 5 },
+        { text: "Preguntarle si hay antecedentes familiares de algún diagnóstico psiquiátrico, sí o no, para descartarlo rápido.", pts: 5 },
+        { text: "Empezar a aplicar de memoria los criterios diagnósticos de un manual clínico, preguntándolos uno por uno como una lista de chequeo.", pts: -1,
+          error: "Se convirtió la entrevista en una lista de chequeo diagnóstico rígida, perdiendo la escucha del relato de la persona." },
+        { text: "Decirle que, por lo que cuenta, probablemente tiene un trastorno específico, y que no hay de qué preocuparse porque es \"muy común hoy en día\".", pts: -1,
+          error: "Se entregó un diagnóstico prematuro en una primera entrevista, sin la exploración clínica suficiente." }
       ],
       next: "senal_riesgo"
     },
 
     senal_riesgo: {
       phase: "conectar",
-      label: "Escena 7 · Una señal de alerta",
-      narrative: fill("Mientras hablan, {{NOMBRE}} baja la mirada y su tono cambia.", c),
+      label: "Escena 7 · Una revelación inesperada",
+      narrative: fill("Mientras profundizan en la conversación, {{NOMBRE}} baja la mirada y su tono cambia.", c),
       characterLine: c.senalRiesgoLine,
       type: "choice",
       category: "seguridad",
       options: [
         { text: "Preguntarle de forma directa y calmada si en este momento ha tenido pensamientos de hacerse daño o de que no vale la pena seguir viviendo.", pts: 8, next: "riesgo_explorado" },
-        { text: "Cambiar de tema para no incomodarlo más de lo que ya está.", pts: 0,
+        { text: "Cambiar de tema para no incomodarla más de lo que ya está.", pts: 0,
           error: "Se pasó por alto una posible señal de riesgo sin explorarla.", next: "riesgo_omitido" },
-        { text: "Decirle: \"No pienses en eso ahora, seguramente es solo el cansancio y el momento hablando.\"", pts: -1,
-          error: "Se minimizó una posible señal de riesgo, atribuyéndola solo al cansancio, en lugar de explorarla.", next: "riesgo_omitido" },
-        { text: "Decirle: \"Puedes contarme todo, te prometo que absolutamente nada de esto va a salir de aquí.\"", pts: 3,
-          error: "Se prometió confidencialidad absoluta sin considerar que, si hay riesgo para su vida, esa confidencialidad tiene límites.", next: "riesgo_explorado" }
+        { text: "Decirle: \"No piense en eso ahora, seguramente es solo el estrés del momento hablando.\"", pts: -1,
+          error: "Se minimizó una posible señal de riesgo, atribuyéndola solo al estrés, en lugar de explorarla.", next: "riesgo_omitido" },
+        { text: "Decirle: \"Puede contarme todo, le prometo que absolutamente nada de esto va a salir de aquí.\"", pts: 3,
+          error: "Se prometió confidencialidad absoluta sin considerar que, si hay riesgo para su vida, esa confidencialidad tiene límites que deben explicarse.", next: "riesgo_explorado" }
       ]
     },
 
     riesgo_explorado: {
       phase: "conectar",
-      label: "Escena 8 · Explorando el riesgo",
+      label: "Escena 8 · Profundizando la exploración de riesgo",
       narrative: fill(c.riesgoExploradoNarrative, c),
       type: "free",
       category: "seguridad",
       maxPts: 4,
-      prompt: "A partir de esta información, ¿qué harías?",
-      evalContext: "El estudiante debe tomar en serio la ideación pasiva revelada, sin generar alarmismo ni promesas de confidencialidad absoluta, priorizando no dejar sola a la persona, mantener contacto cercano y activar una derivación a apoyo profesional/red de contención, dentro de los límites de los PAP (no debe intentar hacer una intervención clínica de riesgo suicida por sí mismo).",
+      prompt: "A partir de esta información, ¿cómo continuarías la exploración de riesgo en esta entrevista?",
+      evalContext: "El estudiante debe profundizar adecuadamente en la exploración de riesgo: indagar frecuencia e intensidad de la ideación, presencia o ausencia de plan y de acceso a medios, antecedentes de intentos previos, y factores protectores (red de apoyo, razones para vivir) — sin generar alarmismo ni prometer confidencialidad absoluta, y considerando si esto amerita consulta con supervisión clínica o derivación according a la severidad.",
       next: "conectar_recursos",
       riskHandled: true
     },
 
     riesgo_omitido: {
       phase: "conectar",
-      label: "Escena 8 · Continuando el contacto",
+      label: "Escena 8 · Continuando la entrevista",
       narrative: fill(c.riesgoOmitidoNarrative, c),
       type: "info",
       riskMissed: true,
@@ -517,47 +520,47 @@ function buildScenes(c){
 
     conectar_recursos: {
       phase: "conectar",
-      label: "Escena 9 · Activación de recursos",
-      narrative: fill("Ha pasado un rato. Es momento de pensar en los siguientes pasos para {{NOMBRE}}: contacto con su red de apoyo y coordinación con los recursos disponibles en el lugar.", c),
+      label: "Escena 9 · Explorando el contexto y la red de apoyo",
+      narrative: fill("Ha avanzado la entrevista con {{NOMBRE}}. Es momento de explorar su contexto de vida y su red de apoyo.", c),
       type: "choice",
       category: "recursos",
       options: [
-        { text: fill("Ayudar a {{NOMBRE}} a contactar a un familiar o persona de confianza, y coordinar con el personal presente para que sea evaluado médicamente.", c), pts: 10 },
-        { text: "Decirle que no se preocupe, que tú te vas a quedar coordinando personalmente todo lo que necesite hasta que esté resuelto.", pts: 2,
-          error: "Se asumió un compromiso de resolver todo personalmente, fomentando dependencia en lugar de activar su propia red de apoyo." },
-        { text: "Alejarte un momento para buscar ayuda sin decirle nada ni asegurarte de que quede acompañado.", pts: 0,
-          error: "Se dejó sola, sin acompañamiento, a una persona en una situación de vulnerabilidad." },
-        { text: "Sugerirle que hable de lo ocurrido con todas las personas presentes en el lugar para \"desahogarse\" en grupo.", pts: 1,
-          error: "Se propuso una forma de intervención grupal no estructurada que no corresponde a los PAP y puede ser retraumatizante." }
+        { text: fill("Preguntarle de forma abierta con quién cuenta actualmente (familia, amistades, pareja), y si alguna de esas personas sabe lo que está viviendo.", c), pts: 10 },
+        { text: "Decirle que no se preocupe, que a partir de ahora tú vas a estar disponible para ella siempre que lo necesite, incluso fuera de las sesiones.", pts: 2,
+          error: "Se ofreció una disponibilidad personal ilimitada, fomentando dependencia en vez de fortalecer su propia red de apoyo." },
+        { text: "Pasar directamente a la siguiente pregunta del protocolo sin explorar su red de apoyo actual.", pts: 0,
+          error: "Se omitió por completo la exploración del contexto y la red de apoyo, un área clave de una primera entrevista." },
+        { text: "Sugerirle que hable de todo esto abiertamente con toda su familia junta, sin explorar antes si eso sería seguro o deseado para ella.", pts: 1,
+          error: "Se propuso una revelación familiar no explorada previamente, que puede no ser segura ni deseada por la persona." }
       ],
       next: "derivacion"
     },
 
     derivacion: {
       phase: "conectar",
-      label: "Escena 10 · Derivación",
-      narrative: "Antes de finalizar el contacto, es momento de decidir sobre la derivación.",
+      label: "Escena 10 · Valorando la continuidad del proceso",
+      narrative: "Antes de finalizar esta primera entrevista, es momento de valorar cómo continuar.",
       type: "free",
       category: "derivacion",
       maxPts: 10,
-      prompt: "¿Consideras necesario realizar alguna derivación? ¿Por qué?",
-      evalContext: fill("El estudiante debe reconocer los límites de los PAP y fundamentar si corresponde derivar a {{NOMBRE}} a apoyo psicológico profesional y/o servicios de salud, considerando lo revelado (exposición a un evento de crisis, ideación pasiva reciente, necesidad de seguimiento), sin realizar diagnóstico ni psicoterapia en el lugar.", c),
+      prompt: "¿Consideras necesario agendar sesiones de seguimiento, derivar a otro profesional, o ambas cosas? ¿Por qué?",
+      evalContext: fill("El estudiante debe fundamentar si corresponde continuar el proceso con seguimiento psicológico, derivar a evaluación psiquiátrica u otra especialidad (por ejemplo, si hay riesgo relevante o síntomas que lo ameriten), o ambas cosas, considerando lo explorado en la entrevista (motivo de consulta, historia, contexto y señales de riesgo si las hubo), sin cerrar un diagnóstico definitivo en una sola sesión.", c),
       next: "cierre"
     },
 
     cierre: {
       phase: "conectar",
-      label: "Escena 11 · Cierre del contacto",
-      narrative: fill("Es momento de finalizar tu intervención con {{NOMBRE}}.", c),
+      label: "Escena 11 · Cierre de la entrevista",
+      narrative: fill("Es momento de finalizar esta primera entrevista con {{NOMBRE}}.", c),
       type: "choice",
       category: "intervencion",
       options: [
-        { text: fill("Explicarle con claridad qué puede pasar a continuación, entregarle información de contacto de servicios de apoyo psicológico, y asegurarte de que quede {{ACOMPANADO}} por alguien de confianza antes de retirarte.", c), pts: 15 },
+        { text: fill("Hacer una breve devolución de lo conversado, explicar con claridad los próximos pasos (frecuencia de sesiones, posible derivación si corresponde), y preguntarle si tiene dudas antes de agendar.", c), pts: 15 },
         { text: "Despedirte asegurándole con firmeza que, con el tiempo, todo esto va a quedar atrás y todo va a estar bien.", pts: 4,
-          error: "El cierre incluyó una garantía sobre el futuro que no se puede prometer, y no aseguró acompañamiento posterior." },
-        { text: "Quedarte con él/ella de forma indefinida, evitando derivarlo a nadie más y tratando de resolver tú mismo/a toda la situación.", pts: 3,
-          error: "No se reconocieron los límites propios de los PAP frente a una necesidad de apoyo continuado." },
-        { text: "Entregarle solo un número de teléfono de contacto, sin explicar nada más ni verificar que tenga compañía.", pts: 6 }
+          error: "El cierre incluyó una garantía sobre el resultado del proceso que no se puede prometer, y no ofreció un encuadre claro de los próximos pasos." },
+        { text: "Extender la sesión de forma indefinida, sin cerrar el tiempo acordado, intentando resolver todo en este primer encuentro.", pts: 3,
+          error: "No se respetó el encuadre de tiempo de la sesión, propio de un proceso clínico estructurado." },
+        { text: "Terminar la sesión agendando la próxima cita, sin explicarle nada sobre lo conversado ni verificar si tiene dudas.", pts: 6 }
       ],
       next: "END"
     }
@@ -771,8 +774,8 @@ function heuristicEvaluate(sceneDef, text){
   if(!t){
     return { score: 0, feedback: "No se registró una respuesta. (Evaluación estimada: no se pudo contactar al motor de evaluación.)", strength:"", error:"Respuesta vacía." };
   }
-  const goodSignals = ["entiendo","comprendo","es comprensible","estoy aquí","acompañ","cómo te sientes","necesitas","tu ritmo","cuando quieras","tranquil","apoyo","seguro","ayuda"];
-  const badSignals = ["cálmate","calmate","tranquila ya","no pasa nada","todos vamos a estar bien","cuéntame exactamente","cuentame exactamente","seguro que no"];
+  const goodSignals = ["cuénteme más","cuenteme mas","cómo ha sido","como ha sido","qué más","que mas","entiendo","comprendo","es comprensible","desde cuándo","desde cuando","cómo se siente","como se siente","tu ritmo","su ritmo","cuando quieras","cuando guste","apoyo","red de apoyo","cómo lo ha vivido"];
+  const badSignals = ["no se preocupe","no te preocupes","seguro se le va a pasar","seguro se le pasa","sí o no","si o no","cuénteme exactamente","cuenteme exactamente","le prometo que nada","te prometo que nada"];
   let score = Math.min(sceneDef.maxPts, Math.round(sceneDef.maxPts * 0.55));
   goodSignals.forEach(s => { if(t.includes(s)) score = Math.min(sceneDef.maxPts, score + 1); });
   badSignals.forEach(s => { if(t.includes(s)) score = Math.max(0, score - 2); });
@@ -899,7 +902,7 @@ function renderHeader(){
     : "Selección de caso pendiente";
   wrap.innerHTML = `
     <div class="casefile-header">
-      <div class="casefile-title">Simulación PAP · ${caseLabel}</div>
+      <div class="casefile-title">Simulación de entrevista · ${caseLabel}</div>
       <div class="tabbar">
         <div class="tab ${activeTab==='sim'?'active':''}" data-tab="sim">Simulación</div>
         <div class="tab ${activeTab==='teacher'?'active':''}" data-tab="teacher">Modo docente</div>
@@ -929,9 +932,9 @@ function renderIntro(){
   wrap.className = "panel intro-block";
 
   let html = `
-    <span class="scene-label">Entrenamiento en Primeros Auxilios Psicológicos</span>
-    <h1>Simulador de intervención en crisis</h1>
-    <p class="sub">Asumirás el rol de estudiante de Psicología brindando Primeros Auxilios Psicológicos (PAP) en el lugar de una emergencia. No se trata de psicoterapia ni de diagnóstico: se trata de aplicar los principios y límites propios de los PAP.</p>
+    <span class="scene-label">Entrenamiento en Entrevista Psicológica</span>
+    <h1>Simulador de entrevista de primer acercamiento</h1>
+    <p class="sub">Asumirás el rol de estudiante de Psicología realizando una primera entrevista clínica (anamnesis) con un/a consultante. No se trata de una intervención en crisis: se trata de establecer rapport, explorar el motivo de consulta y la historia del problema, indagar el contexto de vida, evaluar riesgo cuando corresponda, y cerrar la entrevista con un encuadre claro de los próximos pasos.</p>
     <label class="field-label">Nombre del/de la estudiante</label>
     <input class="name-input" id="studentNameInput" type="text" placeholder="Escribe tu nombre completo" value="${state.studentName}">
     <label class="field-label">Caso de la simulación</label>
@@ -985,9 +988,9 @@ function renderIntro(){
 function renderPhaseTrack(){
   const scene = SCENES[state.sceneId];
   const phases = [
-    { id: "mirar", label: "Mirar" },
-    { id: "escuchar", label: "Escuchar" },
-    { id: "conectar", label: "Conectar" }
+    { id: "mirar", label: "Encuadre" },
+    { id: "escuchar", label: "Exploración" },
+    { id: "conectar", label: "Cierre" }
   ];
   const currentIdx = phases.findIndex(p => p.id === scene.phase);
   const wrap = document.createElement("div");
@@ -1159,7 +1162,7 @@ function renderReport(){
 
   const riskSection = section("Decisiones de riesgo",
     state.riskHandled === false
-      ? `<li class="tag-risk">Se omitió explorar una señal directa de posible riesgo de autolesión/suicidio expresada por la persona en crisis.</li>`
+      ? `<li class="tag-risk">Se omitió explorar una señal directa de posible riesgo de autolesión/suicidio expresada por el/la consultante.</li>`
       : state.riskHandled === true
         ? `<li>La señal de riesgo presentada fue explorada de forma directa y apropiada.</li>`
         : `<li>No se presentaron decisiones de alto riesgo adicionales en esta simulación.</li>`);
@@ -1220,10 +1223,10 @@ function buildRecommendations(){
   if(state.riskHandled === false) recs.push("Ante cualquier expresión de desesperanza o ideas de \"no querer seguir\", preguntar siempre de forma directa y calmada por pensamientos de autolesión o suicidio.");
   if(state.scores.comunicacion < 14) recs.push("Reforzar la validación emocional y evitar frases como \"cálmate\" o preguntas que presionen el relato del evento.");
   if(state.scores.necesidades < 14) recs.push("Ampliar la exploración de necesidades inmediatas: seguridad física, red de apoyo y estado emocional, antes de avanzar a la intervención.");
-  if(state.scores.etica < 4) recs.push("Revisar los límites de la confidencialidad cuando existe riesgo para la vida, y evitar el uso de técnicas psicoterapéuticas fuera del alcance de los PAP.");
+  if(state.scores.etica < 4) recs.push("Revisar los límites de la confidencialidad cuando existe riesgo para la vida, y evitar cerrar diagnósticos o comprometerse con disponibilidad ilimitada en una primera entrevista.");
   if(state.scores.recursos < 7) recs.push("Priorizar la activación de la propia red de apoyo de la persona en lugar de asumir la responsabilidad de resolver todo.");
   if(state.scores.derivacion < 7) recs.push("Fundamentar con mayor claridad cuándo y por qué corresponde derivar a apoyo profesional.");
-  if(!recs.length) recs.push("Continúa consolidando la aplicación integrada de los principios de Mirar, Escuchar y Conectar en distintos escenarios de crisis.");
+  if(!recs.length) recs.push("Continúa consolidando el manejo integrado del encuadre, la exploración clínica y el cierre en distintos tipos de primera entrevista.");
   return recs;
 }
 
@@ -1273,17 +1276,15 @@ const CASE_FORM_FIELDS = [
   { key: "tag", label: "Etiqueta (ej. Caso D)", type: "text" },
   { key: "tituloCorto", label: "Título corto", type: "text" },
   { key: "descripcion", label: "Descripción (aparece en el selector)", type: "textarea", full: true },
-  { key: "nombre", label: "Nombre de la persona", type: "text" },
+  { key: "nombre", label: "Nombre del/la consultante", type: "text" },
   { key: "edad", label: "Edad", type: "text" },
-  { key: "persona", label: "\"la persona\" (ej. la joven / el joven)", type: "text" },
-  { key: "personaCap", label: "Con mayúscula (ej. La joven)", type: "text" },
+  { key: "persona", label: "\"la persona\" (ej. la consultante / el consultante)", type: "text" },
+  { key: "personaCap", label: "Con mayúscula (ej. La consultante)", type: "text" },
   { key: "pron", label: "Pronombre (ella / él)", type: "text" },
-  { key: "acompanado", label: "Acompañado/a", type: "text" },
-  { key: "herido", label: "Herido/a", type: "text" },
-  { key: "llegada", label: "Escena 1 · Descripción de la llegada al lugar", type: "textarea", full: true },
-  { key: "aperturaLine", label: "Frase de apertura de la persona (entre comillas)", type: "textarea", full: true },
-  { key: "estadoInicial", label: "Estado inicial (ej. \"llorando de forma intermitente...\")", type: "textarea", full: true },
-  { key: "necesidadesNarrative", label: "Narrativa de necesidades inmediatas (usa {{NOMBRE}})", type: "textarea", full: true },
+  { key: "llegada", label: "Escena 1 · Ficha de derivación / contexto antes de recibirlo", type: "textarea", full: true },
+  { key: "aperturaLine", label: "Frase de apertura del/la consultante (entre comillas)", type: "textarea", full: true },
+  { key: "estadoInicial", label: "Estado inicial (ej. \"con una postura tensa...\")", type: "textarea", full: true },
+  { key: "necesidadesNarrative", label: "Narrativa de historia del problema (usa {{NOMBRE}})", type: "textarea", full: true },
   { key: "senalRiesgoLine", label: "Frase de señal de riesgo (entre comillas)", type: "textarea", full: true },
   { key: "riesgoExploradoNarrative", label: "Narrativa si se explora el riesgo (usa {{NOMBRE}})", type: "textarea", full: true },
   { key: "riesgoOmitidoNarrative", label: "Narrativa si NO se explora el riesgo (usa {{NOMBRE}})", type: "textarea", full: true }
