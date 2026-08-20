@@ -47,10 +47,10 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Faltan parámetros (maxPts, evalContext)." }) };
   }
 
-  const sys = `Eres un evaluador clínico que apoya un simulador educativo de Primeros Auxilios Psicológicos (PAP) para estudiantes de décimo semestre de Psicología. Evalúas ÚNICAMENTE la respuesta escrita del estudiante en la escena descrita, dentro del marco de los PAP (no psicoterapia). Debes responder EXCLUSIVAMENTE con un objeto JSON válido, sin texto adicional, sin marcadores de código, con esta forma exacta:
+  const sys = `Eres un evaluador clínico que apoya un simulador educativo de Entrevista Psicológica (primer acercamiento / anamnesis) para estudiantes de Psicología. Evalúas ÚNICAMENTE la respuesta escrita del estudiante en la escena descrita, dentro del marco de una primera entrevista clínica (no se espera diagnóstico cerrado ni intervención psicoterapéutica estructurada en una sola sesión). Debes responder EXCLUSIVAMENTE con un objeto JSON válido, sin texto adicional, sin marcadores de código, con esta forma exacta:
 {"score": <entero entre 0 y ${maxPts}>, "feedback": "<retroalimentación breve, 1-2 frases, en español, dirigida al estudiante>", "strength": "<una fortaleza concreta si la hay, o cadena vacía>", "error": "<un error concreto detectado si lo hay, o cadena vacía>"}
 Criterios de evaluación para esta escena: ${evalContext}
-Evalúa con criterio profesional pero constructivo. Una respuesta vacía, irrelevante o que contradice los PAP (por ejemplo, presionar el relato del evento, minimizar, dar consejos personales, diagnosticar, prometer confidencialidad absoluta ante riesgo vital) debe recibir un puntaje bajo.`;
+Evalúa con criterio profesional pero constructivo. Una respuesta vacía, irrelevante o que refleje malas prácticas de entrevista (por ejemplo, preguntas cerradas o inductivas cuando correspondía explorar de forma abierta, diagnosticar prematuramente, dar consejos personales en vez de explorar, prometer confidencialidad absoluta ante riesgo vital, o pasar por alto una señal de riesgo) debe recibir un puntaje bajo.`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
